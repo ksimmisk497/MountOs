@@ -666,18 +666,27 @@ function renderGames(root) {
       b.type = "button";
       b.className = "game-tile";
       const letter = (g.name || "?").trim().charAt(0).toUpperCase() || "?";
+      const base = "https://class6x.gitlab.io/" + g.id + "/";
       const candidates = [
-        "https://class6x.gitlab.io/" + g.id + "/icons/icon-256.png",
-        "https://class6x.gitlab.io/" + g.id + "/icons/icon-512.png",
-        "https://class6x.gitlab.io/" + g.id + "/icon.png",
-        "https://class6x.gitlab.io/" + g.id + "/logo.png",
-        "https://class6x.gitlab.io/" + g.id + "/favicon.ico",
-        "https://class6x.gitlab.io/" + g.id + "/assets/icon.png",
-        "https://www.google.com/s2/favicons?domain=class6x.gitlab.io&sz=128"
+        base + "logo.png",
+        base + "favicon.png",
+        base + "icons/icon-256.png",
+        base + "icons/icon-128.png",
+        base + "icons/icon-512.png",
+        base + "icons/loading-logo.png",
+        base + "icons/icon-16.png",
+        base + "html5game/splash.png",
+        base + "splash.png",
+        base + "icon.png",
+        base + "favicon.ico",
+        base + "assets/icon.png",
+        base + "img/favicon.png",
+        base + "images/logo.png",
+        base + "4399.png"
       ];
       b.innerHTML = `<div class="game-thumb" style="background:${gameColor(g.id)}">` +
         `<span class="game-letter">${letter}</span>` +
-        `<img class="game-icon" alt="" loading="lazy" decoding="async" src="${candidates[0]}" data-cands="${candidates.join("|")}" data-idx="0" />` +
+        `<img class="game-icon" alt="" loading="eager" decoding="async" src="${candidates[0]}" data-cands="${candidates.join("|")}" data-idx="0" />` +
         `</div><span class="game-name"></span>`;
       b.querySelector(".game-name").textContent = g.name;
       const img = b.querySelector(".game-icon");
@@ -703,8 +712,22 @@ function renderGames(root) {
     playingTitle.textContent = g.name;
     library.hidden = true;
     player.hidden = false;
-    // Direct load — class6x pages are static; proxy makes them slow
-    frame.src = g.url;
+    // Always go through UV proxy so redirects / external sites stay inside the frame
+    var proxied = toProxyUrl(g.url);
+    function setSrc() {
+      frame.src = proxied;
+    }
+    if (window.__mountSWReady) {
+      setSrc();
+    } else {
+      var done = false;
+      var t = setTimeout(function () {
+        if (!done) { done = true; setSrc(); }
+      }, 200);
+      ensureProxySW().then(function () {
+        if (!done) { done = true; clearTimeout(t); setSrc(); }
+      });
+    }
   }
 
   function exitGame() {
