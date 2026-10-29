@@ -642,7 +642,7 @@ function renderGames(root) {
           <button type="button" id="games-back">Back</button>
           <span id="games-playing-title"></span>
         </div>
-        <iframe id="games-frame" class="games-frame" allowfullscreen></iframe>
+        <iframe id="games-frame" class="games-frame" allowfullscreen allow="fullscreen; gamepad; autoplay; clipboard-write" referrerpolicy="no-referrer"></iframe>
       </div>
     </div>`;
 
@@ -655,6 +655,86 @@ function renderGames(root) {
   const playingTitle = root.querySelector("#games-playing-title");
   let all = [];
 
+  // Cache resolved icon URLs so they appear instantly next time
+  var iconCache = {};
+  try { iconCache = JSON.parse(localStorage.getItem("mount_game_icons") || "{}") || {}; } catch (e) {}
+  function saveIconCache() {
+    try { localStorage.setItem("mount_game_icons", JSON.stringify(iconCache)); } catch (e) {}
+  }
+
+  function resolveGameIcon(g, img) {
+    var cached = iconCache[g.id];
+    if (cached === "") {
+      img.remove();
+      return;
+    }
+    if (cached) {
+      img.src = cached;
+      img.onload = function () {
+        if (img.naturalWidth >= 24) img.classList.add("ok");
+        else { iconCache[g.id] = ""; saveIconCache(); img.remove(); }
+      };
+      img.onerror = function () {
+        delete iconCache[g.id];
+        saveIconCache();
+        resolveGameIcon(g, img); // retry discovery
+      };
+      return;
+    }
+
+    var base = "https://class6x.gitlab.io/" + g.id + "/";
+    // Prioritized list — most common successes first
+    var candidates = [
+      base + "logo.png",
+      base + "icon-256.png",
+      base + "icons/icon-256.png",
+      base + "favicon.png",
+      base + "thumbnail.jpg",
+      base + "icon-128.png",
+      base + "icons/icon-128.png",
+      base + "html5game/splash.png",
+      base + "html5game/bh5logo.png",
+      base + "patch/ubg235/logo_512.png",
+      base + "splash.png",
+      base + "icons/loading-logo.png",
+      base + "favicon.ico",
+      base + "icon.png",
+      base + "screenshots/1-small.jpg"
+    ];
+
+    var settled = false;
+    var remaining = candidates.length;
+
+    function failOne() {
+      remaining--;
+      if (!settled && remaining <= 0) {
+        settled = true;
+        iconCache[g.id] = "";
+        saveIconCache();
+        img.remove();
+      }
+    }
+
+    // Race the top candidates in parallel for speed
+    candidates.forEach(function (url) {
+      var probe = new Image();
+      probe.onload = function () {
+        if (settled) return;
+        if (probe.naturalWidth >= 24 && probe.naturalHeight >= 24) {
+          settled = true;
+          iconCache[g.id] = url;
+          saveIconCache();
+          img.src = url;
+          img.onload = function () { img.classList.add("ok"); };
+        } else {
+          failOne();
+        }
+      };
+      probe.onerror = failOne;
+      probe.src = url;
+    });
+  }
+
   function paint(q) {
     q = (q || "").trim().toLowerCase();
     const list = !q ? all : all.filter(g => g.name.toLowerCase().includes(q) || g.id.includes(q));
@@ -666,58 +746,13 @@ function renderGames(root) {
       b.type = "button";
       b.className = "game-tile";
       const letter = (g.name || "?").trim().charAt(0).toUpperCase() || "?";
-      const base = "https://class6x.gitlab.io/" + g.id + "/";
-      const candidates = [
-        base + "logo.png",
-        base + "favicon.png",
-        base + "icon-256.png",
-        base + "icon-128.png",
-        base + "icon-512.png",
-        base + "icons/icon-256.png",
-        base + "icons/icon-128.png",
-        base + "icons/icon-512.png",
-        base + "icons/loading-logo.png",
-        base + "icons/icon-16.png",
-        base + "thumbnail.jpg",
-        base + "thumbnail.png",
-        base + "html5game/splash.png",
-        base + "html5game/bh5logo.png",
-        base + "splash.png",
-        base + "patch/ubg235/logo_512.png",
-        base + "assets/preloader/preloader_logo_big.png",
-        base + "icon.png",
-        base + "favicon.ico",
-        base + "assets/icon.png",
-        base + "img/favicon.png",
-        base + "images/logo.png",
-        base + "4399.png",
-        base + "screenshots/1-small.jpg",
-        base + "screenshots/1.jpg"
-      ];
       b.innerHTML = `<div class="game-thumb" style="background:${gameColor(g.id)}">` +
         `<span class="game-letter">${letter}</span>` +
-        `<img class="game-icon" alt="" loading="eager" decoding="async" src="${candidates[0]}" data-cands="${candidates.join("|")}" data-idx="0" />` +
+        `<img class="game-icon" alt="" decoding="async" />` +
         `</div><span class="game-name"></span>`;
       b.querySelector(".game-name").textContent = g.name;
       const img = b.querySelector(".game-icon");
-      img.onload = function () {
-        // skip tiny / empty images that turn into soft white blobs
-        if (img.naturalWidth >= 24 && img.naturalHeight >= 24) {
-          img.classList.add("ok");
-        } else {
-          img.onerror();
-        }
-      };
-      img.onerror = function () {
-        const list = (img.dataset.cands || "").split("|").filter(Boolean);
-        let i = parseInt(img.dataset.idx || "0", 10) + 1;
-        if (i < list.length) {
-          img.dataset.idx = String(i);
-          img.src = list[i];
-        } else {
-          img.remove();
-        }
-      };
+      resolveGameIcon(g, img);
       b.title = g.name;
       b.onclick = () => playGame(g);
       frag.appendChild(b);
@@ -729,73 +764,10 @@ function renderGames(root) {
     playingTitle.textContent = g.name;
     library.hidden = true;
     player.hidden = false;
-
-    var direct = g.url;
-    var proxied = toProxyUrl(g.url);
-    var usedProxy = proxied !== direct;
-    var settled = false;
-
-    function loadDirect() {
-      if (settled) return;
-      settled = true;
-      frame.onload = null;
-      frame.onerror = null;
-      frame.src = direct;
-    }
-
-    function loadProxy() {
-      frame.src = proxied;
-      // If proxy is broken / SW missing, fall back to direct after a few seconds
-      var fallbackTimer = setTimeout(function () {
-        if (settled) return;
-        try {
-          var doc = frame.contentDocument;
-          if (!doc || !doc.body || !doc.body.innerHTML || /Proxy error/i.test(doc.body.innerText || "")) {
-            loadDirect();
-          } else {
-            settled = true;
-          }
-        } catch (e) {
-          // cross-origin means the game loaded through proxy (good)
-          settled = true;
-        }
-      }, 4500);
-
-      frame.onload = function () {
-        clearTimeout(fallbackTimer);
-        try {
-          var doc = frame.contentDocument;
-          if (doc && doc.body && /Proxy error/i.test(doc.body.innerText || "")) {
-            loadDirect();
-            return;
-          }
-        } catch (e) {}
-        settled = true;
-      };
-      frame.onerror = function () {
-        clearTimeout(fallbackTimer);
-        loadDirect();
-      };
-    }
-
-    if (!usedProxy) {
-      loadDirect();
-      return;
-    }
-
-    if (window.__mountSWReady) {
-      loadProxy();
-    } else {
-      var done = false;
-      var t = setTimeout(function () {
-        if (!done) { done = true; loadProxy(); }
-      }, 500);
-      ensureProxySW().then(function () {
-        if (!done) { done = true; clearTimeout(t); loadProxy(); }
-      }).catch(function () {
-        if (!done) { done = true; clearTimeout(t); loadDirect(); }
-      });
-    }
+    // Direct load for instant start (class6x is static). Proxy is still used by the browser app.
+    frame.onload = null;
+    frame.onerror = null;
+    frame.src = g.url;
   }
 
   function exitGame() {
