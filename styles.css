@@ -620,3 +620,137 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
 }
 .mount-ai-bar button:hover { background: rgba(255,255,255,0.16); }
 .mount-ai-frame { flex: 1; width: 100%; border: 0; background: #111; min-height: 0; }
+
+/* ── Mount OS logo badge — fixed top-right, above everything ── */
+.mount-logo-badge {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #1a2540 0%, #0e1520 100%);
+  border: 1px solid rgba(79,142,247,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  user-select: none;
+  box-shadow:
+    0 4px 20px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+  pointer-events: auto;
+}
+
+.mount-logo-badge:hover {
+  transform: scale(1.06);
+  border-color: rgba(79,142,247,.6);
+  box-shadow:
+    0 6px 24px rgba(0,0,0,.7),
+    0 0 20px rgba(79,142,247,.2),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.mount-logo-badge svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* ── Boot splash ── */
+#boot-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0c0f14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#boot-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#boot-svg {
+  width: 120px;
+  height: 120px;
+  overflow: visible;
+}
+
+/* SVG path draw-on animation */
+#boot-ridge,
+#boot-peak,
+#boot-snow,
+#boot-horizon {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+}
+
+#boot-snow {
+  opacity: 0;
+  stroke: none;
+}
+
+#boot-wordmark {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  color: #e8edf5;
+  opacity: 0;
+  transform: translateY(6px);
+  text-transform: uppercase;
+}
+
+/* animate: ridge draws first, then peak, then snow pops, then horizon, then wordmark fades in, then whole thing fades out */
+#boot-splash.go #boot-ridge {
+  animation: draw-path 0.5s ease-out 0.1s forwards;
+}
+#boot-splash.go #boot-peak {
+  animation: draw-path 0.55s ease-out 0.45s forwards;
+}
+#boot-splash.go #boot-snow {
+  animation: snow-pop 0.25s ease-out 0.85s forwards;
+}
+#boot-splash.go #boot-horizon {
+  animation: draw-path 0.3s ease-out 0.95s forwards;
+}
+#boot-splash.go #boot-wordmark {
+  animation: word-rise 0.5s ease-out 1.1s forwards;
+}
+#boot-splash.go {
+  animation: splash-exit 0.45s ease-in 2.2s forwards;
+}
+
+@keyframes draw-path {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes snow-pop {
+  0%  { opacity: 0; transform: scale(0.5); transform-origin: 40px 12px; }
+  60% { opacity: 0.95; transform: scale(1.1); transform-origin: 40px 12px; }
+  100%{ opacity: 0.9;  transform: scale(1);  transform-origin: 40px 12px; }
+}
+
+@keyframes word-rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes splash-exit {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #boot-splash.go #boot-ridge,
+  #boot-splash.go #boot-peak,
+  #boot-splash.go #boot-horizon { animation: draw-path 0.01s forwards; }
+  #boot-splash.go #boot-snow    { animation: snow-pop 0.01s forwards; }
+  #boot-splash.go #boot-wordmark{ animation: word-rise 0.01s 0.05s forwards; }
+  #boot-splash.go               { animation: splash-exit 0.3s ease-in 0.2s forwards; }
+}

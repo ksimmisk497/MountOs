@@ -79,7 +79,58 @@
     </div>
   </div>
 </div>
+<!-- Mount OS boot splash -->
+<div id="boot-splash">
+  <div id="boot-logo">
+    <svg id="boot-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- back ridgeline -->
+      <path id="boot-ridge" d="M6 62L24 32L40 50L56 26L74 62"
+            stroke="#4f8ef7" stroke-width="1.6"
+            stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- main mountain -->
+      <path id="boot-peak" d="M12 62L40 12L68 62"
+            fill="rgba(79,142,247,0.1)" stroke="#4f8ef7" stroke-width="2.4"
+            stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- snow cap -->
+      <path id="boot-snow" d="M40 12L32.5 29L40 26L47.5 29L40 12Z"
+            fill="#4f8ef7" opacity="0.9"/>
+      <!-- horizon -->
+      <line id="boot-horizon" x1="6" y1="62" x2="74" y2="62"
+            stroke="#4f8ef7" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <div id="boot-wordmark">Mount OS</div>
+  </div>
+</div>
+
+<!-- Mount OS logo badge — fixed top-right, above all content -->
+<div class="mount-logo-badge" id="mount-logo-badge">
+  <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 20L8 10L13 16L18 8L24 20"
+          stroke="#4f8ef7" stroke-width="1.2"
+          stroke-linejoin="round" stroke-linecap="round" opacity="0.3"/>
+    <path d="M4 20L13 4L22 20"
+          fill="rgba(79,142,247,0.1)" stroke="#4f8ef7" stroke-width="1.8"
+          stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M13 4L10.5 9.5L13 8.5L15.5 9.5L13 4Z"
+          fill="#4f8ef7" opacity="0.85"/>
+    <line x1="2" y1="20" x2="24" y2="20"
+          stroke="#4f8ef7" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
+  </svg>
+</div>
+
 <div id="ctx"></div>
+<script>
+// Boot splash — kick off draw animation immediately, remove from DOM after
+(function() {
+  var splash = document.getElementById('boot-splash');
+  if (!splash) return;
+  requestAnimationFrame(function() {
+    splash.classList.add('go');
+    // remove from DOM after animation fully completes so it can't block clicks
+    setTimeout(function() { splash.remove(); }, 2800);
+  });
+})();
+</script>
 <script src="uv/uv.bundle.js"></script>
 <script src="uv/uv.config.js"></script>
 <script src="register-sw.js"></script>
