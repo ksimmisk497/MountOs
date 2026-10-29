@@ -313,8 +313,8 @@ function openApp(id) {
   const win = document.createElement("div");
   win.className = "window";
   win.dataset.id = id;
-  const w = Math.min(id === "settings" || id === "games" || id === "ai" ? 960 : id === "browser" ? 1000 : 520, innerWidth - 16);
-  const h = Math.min(id === "settings" || id === "games" || id === "ai" ? 640 : id === "browser" ? 640 : 380, innerHeight - 64);
+  const w = Math.min(id === "settings" || id === "games" || id === "ai" ? 1020 : id === "browser" ? 1000 : 520, innerWidth - 16);
+  const h = Math.min(id === "settings" || id === "ai" ? 640 : id === "games" ? Math.min(innerHeight - 80, 820) : id === "browser" ? 640 : 380, innerHeight - 64);
   win.style.width = w + "px";
   win.style.height = h + "px";
   win.style.left = Math.max(8, (innerWidth - w) / 2) + "px";
@@ -666,18 +666,28 @@ function renderGames(root) {
       b.type = "button";
       b.className = "game-tile";
       const letter = (g.name || "?").trim().charAt(0).toUpperCase() || "?";
-      const icon256 = "https://class6x.gitlab.io/" + g.id + "/icons/icon-256.png";
-      const favicon = "https://class6x.gitlab.io/" + g.id + "/favicon.ico";
+      const candidates = [
+        "https://class6x.gitlab.io/" + g.id + "/icons/icon-256.png",
+        "https://class6x.gitlab.io/" + g.id + "/icons/icon-512.png",
+        "https://class6x.gitlab.io/" + g.id + "/icon.png",
+        "https://class6x.gitlab.io/" + g.id + "/logo.png",
+        "https://class6x.gitlab.io/" + g.id + "/favicon.ico",
+        "https://class6x.gitlab.io/" + g.id + "/assets/icon.png",
+        "https://www.google.com/s2/favicons?domain=class6x.gitlab.io&sz=128"
+      ];
       b.innerHTML = `<div class="game-thumb" style="background:${gameColor(g.id)}">` +
         `<span class="game-letter">${letter}</span>` +
-        `<img class="game-icon" alt="" loading="lazy" decoding="async" src="${icon256}" data-fallback="${favicon}" />` +
+        `<img class="game-icon" alt="" loading="lazy" decoding="async" src="${candidates[0]}" data-cands="${candidates.join("|")}" data-idx="0" />` +
         `</div><span class="game-name"></span>`;
       b.querySelector(".game-name").textContent = g.name;
       const img = b.querySelector(".game-icon");
       img.onload = function () { img.classList.add("ok"); };
       img.onerror = function () {
-        if (img.dataset.fallback && img.src !== img.dataset.fallback) {
-          img.src = img.dataset.fallback;
+        const list = (img.dataset.cands || "").split("|").filter(Boolean);
+        let i = parseInt(img.dataset.idx || "0", 10) + 1;
+        if (i < list.length) {
+          img.dataset.idx = String(i);
+          img.src = list[i];
         } else {
           img.remove();
         }
