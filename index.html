@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mount OS</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<div id="lock" class="screen active">
+  <div id="lock-time-wrap">
+    <div id="lock-clock">12:00</div>
+    <div id="lock-date">Monday</div>
+  </div>
+  <div id="lock-hint">Click or press any key to unlock</div>
+  <div id="login-panel">
+    <div class="brand">Mount OS</div>
+    <div id="user-list"></div>
+    <button class="btn ghost" id="btn-add-user-login" type="button">Add user</button>
+    <div id="login-form">
+      <div class="who">
+        <div class="avatar" id="login-avatar"></div>
+        <b id="login-name">User</b>
+      </div>
+      <div class="err" id="login-err"></div>
+      <input id="login-pass" type="password" placeholder="PIN" autocomplete="current-password" required />
+      <button class="btn primary" id="btn-sign-in" type="button">Sign in</button>
+      <button class="btn ghost" id="btn-back-users" type="button">Back</button>
+    </div>
+    <div id="create-form">
+      <div class="err" id="create-err"></div>
+      <input id="create-name" type="text" placeholder="Username" maxlength="24" />
+      <input id="create-pass" type="password" placeholder="PIN (required)" />
+      <button class="btn primary" id="btn-create" type="button">Create</button>
+      <button class="btn ghost" id="btn-cancel-create" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="session" class="screen">
+  <div id="wallpaper"></div>
+  <div id="desktop-icons"></div>
+  <div id="windows"></div>
+
+  <div id="start">
+    <input id="start-search" placeholder="Search for apps, settings, and documents" />
+    <div class="start-label"><span>Pinned</span></div>
+    <div id="pinned"></div>
+    <div class="start-footer">
+      <button class="start-user" id="start-user-btn" type="button">
+        <div class="avatar" id="session-avatar"></div>
+        <span id="session-name">User</span>
+      </button>
+      <button class="power" id="btn-lock" type="button" title="Power">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 2v10"/><path d="M6.2 6.2a8 8 0 1 0 11.6 0"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="taskbar">
+    <div id="taskbar-center">
+      <button class="tb" id="btn-start" type="button" title="Start">
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <rect x="3" y="3" width="8.5" height="8.5" fill="#60cdff"/>
+          <rect x="12.5" y="3" width="8.5" height="8.5" fill="#60cdff"/>
+          <rect x="3" y="12.5" width="8.5" height="8.5" fill="#60cdff"/>
+          <rect x="12.5" y="12.5" width="8.5" height="8.5" fill="#60cdff"/>
+        </svg>
+      </button>
+      <div id="task-apps" style="display:flex;gap:4px"></div>
+    </div>
+    <div id="taskbar-right">
+      <div id="tb-clock"><span id="tb-time">12:00</span><small id="tb-date">1/1/2026</small></div>
+    </div>
+  </div>
+</div>
+<div id="ctx"></div>
+<script src="app.js"></script>
+</body>
+</html>
