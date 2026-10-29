@@ -61,6 +61,31 @@ function save() {
   });
 })();
 
+
+/* UV proxy helpers */
+function ensureProxySW() {
+  if (typeof registerSW === "function") {
+    return registerSW().catch(function () {});
+  }
+  return Promise.resolve();
+}
+function toProxyUrl(raw) {
+  var url = raw;
+  if (typeof search === "function") {
+    url = search(raw, "https://duckduckgo.com/?q=%s");
+  } else {
+    url = String(raw || "").trim();
+    if (!/^https?:\/\//i.test(url)) {
+      if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(url)) url = "https://" + url;
+      else url = "https://duckduckgo.com/?q=" + encodeURIComponent(url);
+    }
+  }
+  if (typeof __uv$config !== "undefined" && __uv$config.encodeUrl && __uv$config.prefix) {
+    return __uv$config.prefix + __uv$config.encodeUrl(url);
+  }
+  return url;
+}
+
 let state = load();
 let selectedUserId = null;
 let unlocked = false;
@@ -463,7 +488,7 @@ function renderBrowser(root) {
     stage.innerHTML = `
       <div class="browser-home">
         <h2>Mount</h2>
-        <p>Search or enter a website</p>
+        <p>Search or enter a website · proxied</p>
         <form class="search-box" id="b-home-form">
           <input id="b-home-q" placeholder="Search DuckDuckGo or type a URL" />
         </form>
@@ -497,9 +522,11 @@ function renderBrowser(root) {
       t.title = new URL(url).hostname.replace(/^www\./, "") || "Tab";
     } catch (e) { t.title = "Tab"; }
     urlInput.value = url;
-    showFrame(url);
-    renderTabs();
-    updateNav();
+    ensureProxySW().then(function () {
+      showFrame(toProxyUrl(url));
+      renderTabs();
+      updateNav();
+    });
   }
 
   function updateNav() {
@@ -527,7 +554,7 @@ function renderBrowser(root) {
       t.index--;
       t.url = t.history[t.index];
       urlInput.value = t.url;
-      showFrame(t.url);
+      showFrame(toProxyUrl(t.url));
       renderTabs();
       updateNav();
     }
@@ -538,14 +565,14 @@ function renderBrowser(root) {
       t.index++;
       t.url = t.history[t.index];
       urlInput.value = t.url;
-      showFrame(t.url);
+      showFrame(toProxyUrl(t.url));
       renderTabs();
       updateNav();
     }
   };
   root.querySelector("#b-reload").onclick = () => {
     const t = current();
-    if (t.url) showFrame(t.url);
+    if (t.url) showFrame(toProxyUrl(t.url));
     else showHome();
   };
 
@@ -569,19 +596,40 @@ async function loadGamesCatalog() {
   return GAMES_CATALOG;
 }
 
+
+function gameColor(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  const hue = h % 360;
+  return "hsl(" + hue + " 45% 38%)";
+}
+
 function renderGames(root) {
   root.innerHTML = `
     <div class="games-app">
-      <div class="games-toolbar">
-        <input id="games-search" type="text" placeholder="Search games" />
-        <span id="games-count"></span>
+      <div class="games-library" id="games-library">
+        <div class="games-toolbar">
+          <input id="games-search" type="text" placeholder="Search games" />
+          <span id="games-count"></span>
+        </div>
+        <div class="games-grid" id="games-grid">Loading…</div>
       </div>
-      <div class="games-grid" id="games-grid">Loading…</div>
+      <div class="games-player" id="games-player" hidden>
+        <div class="games-player-bar">
+          <button type="button" id="games-back">Back</button>
+          <span id="games-playing-title"></span>
+        </div>
+        <iframe id="games-frame" class="games-frame" allowfullscreen></iframe>
+      </div>
     </div>`;
 
+  const library = root.querySelector("#games-library");
+  const player = root.querySelector("#games-player");
   const grid = root.querySelector("#games-grid");
   const search = root.querySelector("#games-search");
   const count = root.querySelector("#games-count");
+  const frame = root.querySelector("#games-frame");
+  const playingTitle = root.querySelector("#games-playing-title");
   let all = [];
 
   function paint(q) {
@@ -594,8 +642,9 @@ function renderGames(root) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "game-tile";
-      b.innerHTML = `<div class="game-thumb"><img src="${GAMES_ICON}" alt=""></div><span></span>`;
-      b.querySelector("span").textContent = g.name;
+      const letter = (g.name || "?").trim().charAt(0).toUpperCase() || "?";
+      b.innerHTML = `<div class="game-thumb" style="background:${gameColor(g.id)}"><span class="game-letter">${letter}</span></div><span class="game-name"></span>`;
+      b.querySelector(".game-name").textContent = g.name;
       b.title = g.name;
       b.onclick = () => playGame(g);
       frag.appendChild(b);
@@ -604,19 +653,22 @@ function renderGames(root) {
   }
 
   function playGame(g) {
-    // open in Mount browser app at game URL
-    openApp("browser");
-    setTimeout(() => {
-      const win = openWins.get("browser");
-      if (!win) return;
-      const input = win.querySelector("#b-url");
-      const form = win.querySelector("#b-form");
-      if (input && form) {
-        input.value = g.url;
-        form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
-      }
-    }, 200);
+    playingTitle.textContent = g.name;
+    library.hidden = true;
+    player.hidden = false;
+    ensureProxySW().then(function () {
+      frame.src = toProxyUrl(g.url);
+    });
   }
+
+  function exitGame() {
+    frame.src = "about:blank";
+    player.hidden = true;
+    library.hidden = false;
+    playingTitle.textContent = "";
+  }
+
+  root.querySelector("#games-back").onclick = exitGame;
 
   loadGamesCatalog().then(list => {
     all = list || [];
@@ -624,6 +676,7 @@ function renderGames(root) {
     search.oninput = () => paint(search.value);
   });
 }
+
 
 
 function renderSettings(root) {
