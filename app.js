@@ -670,19 +670,29 @@ function renderGames(root) {
       const candidates = [
         base + "logo.png",
         base + "favicon.png",
+        base + "icon-256.png",
+        base + "icon-128.png",
+        base + "icon-512.png",
         base + "icons/icon-256.png",
         base + "icons/icon-128.png",
         base + "icons/icon-512.png",
         base + "icons/loading-logo.png",
         base + "icons/icon-16.png",
+        base + "thumbnail.jpg",
+        base + "thumbnail.png",
         base + "html5game/splash.png",
+        base + "html5game/bh5logo.png",
         base + "splash.png",
+        base + "patch/ubg235/logo_512.png",
+        base + "assets/preloader/preloader_logo_big.png",
         base + "icon.png",
         base + "favicon.ico",
         base + "assets/icon.png",
         base + "img/favicon.png",
         base + "images/logo.png",
-        base + "4399.png"
+        base + "4399.png",
+        base + "screenshots/1-small.jpg",
+        base + "screenshots/1.jpg"
       ];
       b.innerHTML = `<div class="game-thumb" style="background:${gameColor(g.id)}">` +
         `<span class="game-letter">${letter}</span>` +
@@ -690,7 +700,14 @@ function renderGames(root) {
         `</div><span class="game-name"></span>`;
       b.querySelector(".game-name").textContent = g.name;
       const img = b.querySelector(".game-icon");
-      img.onload = function () { img.classList.add("ok"); };
+      img.onload = function () {
+        // skip tiny / empty images that turn into soft white blobs
+        if (img.naturalWidth >= 24 && img.naturalHeight >= 24) {
+          img.classList.add("ok");
+        } else {
+          img.onerror();
+        }
+      };
       img.onerror = function () {
         const list = (img.dataset.cands || "").split("|").filter(Boolean);
         let i = parseInt(img.dataset.idx || "0", 10) + 1;
@@ -712,20 +729,71 @@ function renderGames(root) {
     playingTitle.textContent = g.name;
     library.hidden = true;
     player.hidden = false;
-    // Always go through UV proxy so redirects / external sites stay inside the frame
+
+    var direct = g.url;
     var proxied = toProxyUrl(g.url);
-    function setSrc() {
-      frame.src = proxied;
+    var usedProxy = proxied !== direct;
+    var settled = false;
+
+    function loadDirect() {
+      if (settled) return;
+      settled = true;
+      frame.onload = null;
+      frame.onerror = null;
+      frame.src = direct;
     }
+
+    function loadProxy() {
+      frame.src = proxied;
+      // If proxy is broken / SW missing, fall back to direct after a few seconds
+      var fallbackTimer = setTimeout(function () {
+        if (settled) return;
+        try {
+          var doc = frame.contentDocument;
+          if (!doc || !doc.body || !doc.body.innerHTML || /Proxy error/i.test(doc.body.innerText || "")) {
+            loadDirect();
+          } else {
+            settled = true;
+          }
+        } catch (e) {
+          // cross-origin means the game loaded through proxy (good)
+          settled = true;
+        }
+      }, 4500);
+
+      frame.onload = function () {
+        clearTimeout(fallbackTimer);
+        try {
+          var doc = frame.contentDocument;
+          if (doc && doc.body && /Proxy error/i.test(doc.body.innerText || "")) {
+            loadDirect();
+            return;
+          }
+        } catch (e) {}
+        settled = true;
+      };
+      frame.onerror = function () {
+        clearTimeout(fallbackTimer);
+        loadDirect();
+      };
+    }
+
+    if (!usedProxy) {
+      loadDirect();
+      return;
+    }
+
     if (window.__mountSWReady) {
-      setSrc();
+      loadProxy();
     } else {
       var done = false;
       var t = setTimeout(function () {
-        if (!done) { done = true; setSrc(); }
-      }, 200);
+        if (!done) { done = true; loadProxy(); }
+      }, 500);
       ensureProxySW().then(function () {
-        if (!done) { done = true; clearTimeout(t); setSrc(); }
+        if (!done) { done = true; clearTimeout(t); loadProxy(); }
+      }).catch(function () {
+        if (!done) { done = true; clearTimeout(t); loadDirect(); }
       });
     }
   }
@@ -873,3 +941,6 @@ renderUserList();
 state.sessionUserId = null;
 save();
 showScreen("lock");
+
+// Register UV service worker early so the proxy is ready when needed
+try { ensureProxySW(); } catch (e) {}

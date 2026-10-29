@@ -25,9 +25,20 @@ async function pickBestBare() {
 
   var list = (self.__uv$config && self.__uv$config.bareServers) || [
     "https://twilight-cake-6f4c.weswoodland13.workers.dev/",
-    "https://tomp.app/"
+    "https://tomp.app/",
+    "https://bare.benrogo.net/",
+    "https://uv.holyubofficial.net/"
   ];
   if (!Array.isArray(list)) list = [list];
+
+  function withTimeout(ms) {
+    try {
+      if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) return AbortSignal.timeout(ms);
+    } catch (e) {}
+    var c = typeof AbortController !== "undefined" ? new AbortController() : null;
+    if (c) setTimeout(function () { try { c.abort(); } catch (e) {} }, ms);
+    return c ? c.signal : undefined;
+  }
 
   async function probe(url) {
     // Try OPTIONS then GET — reject rate-limits (429) and hard failures
@@ -36,7 +47,7 @@ async function pickBestBare() {
         method: "OPTIONS",
         cache: "no-store",
         mode: "cors",
-        signal: AbortSignal.timeout(2500)
+        signal: withTimeout(3000)
       });
       if (r.status === 429) return Promise.reject(new Error("rate limit"));
       if (r.ok || r.status === 204 || r.status < 500) return url;
@@ -46,7 +57,7 @@ async function pickBestBare() {
         method: "GET",
         cache: "no-store",
         mode: "cors",
-        signal: AbortSignal.timeout(2500)
+        signal: withTimeout(3000)
       });
       if (r2.status === 429) return Promise.reject(new Error("rate limit"));
       if (r2.ok || r2.status === 204 || r2.status < 500) return url;

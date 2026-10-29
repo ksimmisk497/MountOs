@@ -8,10 +8,12 @@
   var base = dir.replace(/\/$/, "");
   function join(p) { return base ? base + p : p; }
 
-  // Your private bare first (no shared rate limit)
+  // Multiple public bare servers with failover
   var bareServers = [
     "https://twilight-cake-6f4c.weswoodland13.workers.dev/",
-    "https://tomp.app/"
+    "https://tomp.app/",
+    "https://bare.benrogo.net/",
+    "https://uv.holyubofficial.net/"
   ];
 
   try {
