@@ -2337,29 +2337,65 @@ function renderWebApp(root, app) {
         </div>
         <div class="native-app-actions">
           <button type="button" id="wa-reload" title="Reload">↻</button>
-          <button type="button" id="wa-popout" title="Open externally">↗</button>
+          <button type="button" id="wa-direct" title="Try direct">Direct</button>
+          <button type="button" id="wa-popout" title="Open in new tab">↗</button>
         </div>
       </div>
       <div class="native-app-body">
         <div class="native-app-loading" id="wa-loading">Starting ${app.name}…</div>
-        <iframe class="webapp-frame" id="wa-frame" allow="fullscreen; autoplay; clipboard-write; gamepad; microphone; camera" allowfullscreen></iframe>
+        <iframe class="webapp-frame" id="wa-frame" allow="fullscreen; autoplay; clipboard-write; gamepad; microphone; camera" allowfullscreen referrerpolicy="no-referrer"></iframe>
       </div>
-      <div class="proxy-banner" id="wa-banner">This app blocked embedded mode. Click ↗ to open it as a standalone window.</div>
+      <div class="proxy-banner" id="wa-banner">If it still won't load, click <b>↗</b> to open in a new tab (some apps block all embedding).</div>
     </div>`;
   const frame = root.querySelector("#wa-frame");
   const banner = root.querySelector("#wa-banner");
   const loading = root.querySelector("#wa-loading");
-  function load(u) {
+  let mode = "proxy"; // proxy | direct
+
+  function hideLoadingSoon() {
+    setTimeout(function () { loading.style.display = "none"; }, 1200);
+  }
+
+  function load() {
     loading.style.display = "grid";
+    loading.textContent = mode === "proxy" ? ("Connecting " + app.name + " via proxy…") : ("Loading " + app.name + "…");
     frame.onload = function () { loading.style.display = "none"; };
-    frame.src = u;
-    if (/discord\.com|spotify\.com|geforcenow|youtube\.com/i.test(u)) {
-      setTimeout(function () { banner.classList.add("show"); }, 3000);
+    frame.onerror = function () {
+      loading.style.display = "none";
+      banner.classList.add("show");
+    };
+    if (mode === "proxy" && typeof canUseProxy === "function" && canUseProxy()) {
+      ensureProxySW().then(function () {
+        try {
+          frame.src = toProxyUrl(url);
+        } catch (e) {
+          mode = "direct";
+          frame.src = url;
+        }
+        hideLoadingSoon();
+      }).catch(function () {
+        mode = "direct";
+        frame.src = url;
+        hideLoadingSoon();
+      });
+    } else {
+      frame.src = url;
+      hideLoadingSoon();
+      // direct embeds often blocked
+      setTimeout(function () { banner.classList.add("show"); }, 2500);
     }
   }
-  root.querySelector("#wa-reload").onclick = function () { load(url); };
-  root.querySelector("#wa-popout").onclick = function () { window.open(url, "_blank", "noopener"); };
-  load(url);
+
+  root.querySelector("#wa-reload").onclick = function () { load(); };
+  root.querySelector("#wa-direct").onclick = function () {
+    mode = mode === "proxy" ? "direct" : "proxy";
+    root.querySelector("#wa-direct").textContent = mode === "proxy" ? "Direct" : "Proxy";
+    load();
+  };
+  root.querySelector("#wa-popout").onclick = function () {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+  load();
 }
 
 /* ── Notifications (from notifications.json) ── */
