@@ -229,11 +229,13 @@ function enterSession() {
   renderTaskbar();
   showScreen("session");
   closeStart();
+  if (window.updateBgMusic) window.updateBgMusic();
 }
 function lockSession() {
   openWins.forEach(win => win.remove());
   openWins.clear();
   renderTaskbar();
+  if (window.updateBgMusic) window.updateBgMusic();
   state.sessionUserId = null;
   save();
   showScreen("lock");
@@ -393,6 +395,7 @@ function openApp(id) {
   wireWin(win, id);
   renderTaskbar();
   focusWin(win);
+  if (window.updateBgMusic) window.updateBgMusic();
 }
 
 function closeWin(id) {
@@ -404,6 +407,7 @@ function closeWin(id) {
     win.remove();
     openWins.delete(id);
     renderTaskbar();
+    if (window.updateBgMusic) window.updateBgMusic();
   }, 160);
 }
 
@@ -424,7 +428,7 @@ function wireWin(win, id) {
   bar.addEventListener("pointerup", () => { drag = null; });
   bar.addEventListener("dblclick", () => win.classList.toggle("maximized"));
   win.querySelector(".close").onclick = () => closeWin(id);
-  win.querySelector(".min").onclick = () => { win.style.visibility = "hidden"; renderTaskbar(); };
+  win.querySelector(".min").onclick = () => { win.style.visibility = "hidden"; renderTaskbar(); if (window.updateBgMusic) window.updateBgMusic(); };
   win.querySelector(".max").onclick = () => win.classList.toggle("maximized");
   win.addEventListener("mousedown", () => focusWin(win));
 }
@@ -435,6 +439,7 @@ function focusWin(win) {
   win.style.visibility = "visible";
   win.style.zIndex = ++zTop;
   renderTaskbar();
+  if (window.updateBgMusic) window.updateBgMusic();
 }
 
 function tbIconHTML(app) {
@@ -486,6 +491,7 @@ function renderTaskbar() {
 
   TASKBAR_PINNED.forEach(id => addBtn(id, true));
   openWins.forEach((win, id) => addBtn(id, false));
+  if (window.updateBgMusic) window.updateBgMusic();
 }
 
 
@@ -2105,36 +2111,40 @@ state.sessionUserId = null;
 save();
 showScreen("lock");
 
-// Background music — Aria Math, loops while the tab is open
+// Background music — Aria Math (quiet), only on home desktop (no open apps)
+window.updateBgMusic = function updateBgMusic() {
+  const audio = document.getElementById("bg-music");
+  if (!audio) return;
+  // Any visible app window => pause. Home screen only => play.
+  let busy = false;
+  if (typeof openWins !== "undefined") {
+    openWins.forEach(function (win) {
+      if (win && win.style.visibility !== "hidden") busy = true;
+    });
+  }
+  if (document.hidden) busy = true;
+  if (busy) {
+    if (!audio.paused) audio.pause();
+  } else {
+    const p = audio.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+};
 (function setupBgMusic() {
   const audio = document.getElementById("bg-music");
   if (!audio) return;
   audio.loop = true;
-  audio.volume = 0.45;
-  let started = false;
-  function tryPlay() {
-    if (started && !audio.paused) return;
-    const p = audio.play();
-    if (p && p.then) {
-      p.then(function () { started = true; }).catch(function () {});
-    } else {
-      started = true;
-    }
-  }
-  tryPlay();
-  // Browsers often block autoplay until a user gesture
+  audio.volume = 0.18;
   function onGesture() {
-    tryPlay();
-    if (started && !audio.paused) {
-      document.removeEventListener("pointerdown", onGesture, true);
-      document.removeEventListener("keydown", onGesture, true);
-    }
+    window.updateBgMusic();
   }
   document.addEventListener("pointerdown", onGesture, true);
   document.addEventListener("keydown", onGesture, true);
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) tryPlay();
+    window.updateBgMusic();
   });
+  // Initial attempt (may be blocked until gesture)
+  window.updateBgMusic();
 })();
 
 // Register UV service worker early so the proxy is ready when needed
