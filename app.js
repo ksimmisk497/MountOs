@@ -6,8 +6,26 @@ const APPS = [
   { id: "settings", name: "Settings", icon: "GEAR", pinned: true, desktop: true },
   { id: "browser", name: "Mount", icon: "WEB", pinned: true, desktop: true },
   { id: "games", name: "Games", icon: "GAME", pinned: true, desktop: true },
-  { id: "ai", name: "Mount AI", icon: "AI", pinned: true, desktop: true }
+  { id: "ai", name: "Mount AI", icon: "AI", pinned: true, desktop: true },
+  { id: "files", name: "File Explorer", icon: "FILES", pinned: true, desktop: false },
+  { id: "notes", name: "Notes", icon: "NOTES", pinned: true, desktop: false },
+  { id: "calc", name: "Calculator", icon: "CALC", pinned: true, desktop: false },
+  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false }
 ];
+
+function appIconHTML(icon, size) {
+  size = size || 22;
+  if (icon === "GEAR") return null; // handled with gearImg
+  if (icon === "WEB") return `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
+  if (icon === "GAME") return `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
+  if (icon === "AI") return `<div class="ico ai-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg></div>`;
+  if (icon === "FILES") return `<div class="ico files-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
+  if (icon === "NOTES") return `<div class="ico notes-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4M8 12h8M8 16h6"/></svg></div>`;
+  if (icon === "CALC") return `<div class="ico calc-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15h0M8 19h2M12 19h2M16 19h0"/></svg></div>`;
+  if (icon === "TERM") return `<div class="ico term-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#4ec9b0" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10l3 2-3 2M12 14h5"/></svg></div>`;
+  if (icon === "FLIX") return `<div class="ico flix-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg></div>`;
+  return `<div class="ico">${icon}</div>`;
+}
 const MOUNT_AI_URL = "https://blackhole-ai.weswoodland13.workers.dev";
 
 const GAMES_ICON = "games-icon.png";
@@ -128,7 +146,18 @@ function showScreen(id) {
   document.getElementById(id).classList.add("active");
 }
 function applyWallpaper() {
-  document.documentElement.style.setProperty("--wp-image", "url(" + WALLPAPER_URL + ")");
+  var src = WALLPAPER_URL;
+  try {
+    if (state && state.settings && state.settings.wallpaper && state.settings.wallpaper !== "default") {
+      src = state.settings.wallpaper;
+    }
+  } catch (e) {}
+  // data URLs or paths
+  if (/^data:|^https?:|^blob:|\.jpg|\.png|\.webp|\.gif/i.test(src) || src.indexOf("/") >= 0) {
+    document.documentElement.style.setProperty("--wp-image", "url(\"" + src.replace(/"/g, '\\"') + "\")");
+  } else {
+    document.documentElement.style.setProperty("--wp-image", "url(" + WALLPAPER_URL + ")");
+  }
 }
 
 function renderUserList() {
@@ -197,6 +226,7 @@ function enterSession() {
   applyWallpaper();
   renderDesktop();
   renderPinned();
+  renderTaskbar();
   showScreen("session");
   closeStart();
 }
@@ -255,12 +285,7 @@ function renderDesktop() {
   APPS.filter(a => a.desktop).forEach(app => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "desk-icon";
-    let ico;
-    if (app.icon === "GEAR") ico = gearImg("ico settings");
-    else if (app.icon === "WEB") ico = `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
-    else if (app.icon === "GAME") ico = `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
-    else if (app.icon === "AI") ico = `<div class="ico ai-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.7"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg></div>`;
-    else ico = `<div class="ico">${app.icon}</div>`;
+    let ico = app.icon === "GEAR" ? gearImg("ico settings") : appIconHTML(app.icon, 22);
     b.innerHTML = ico + `<span>${app.name}</span>`;
     b.ondblclick = () => openApp(app.id);
     b.onclick = () => {
@@ -276,12 +301,7 @@ function renderPinned() {
   APPS.filter(a => a.pinned).forEach(app => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "start-app";
-    let ico;
-    if (app.icon === "GEAR") ico = gearImg("ico settings");
-    else if (app.icon === "WEB") ico = `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
-    else if (app.icon === "GAME") ico = `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
-    else if (app.icon === "AI") ico = `<div class="ico ai-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.7"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg></div>`;
-    else ico = `<div class="ico">${app.icon}</div>`;
+    let ico = app.icon === "GEAR" ? gearImg("ico settings") : appIconHTML(app.icon, 22);
     b.innerHTML = ico + `<span>${app.name}</span>`;
     b.onclick = () => { closeStart(); openApp(app.id); };
     box.appendChild(b);
@@ -313,8 +333,19 @@ function openApp(id) {
   const win = document.createElement("div");
   win.className = "window";
   win.dataset.id = id;
-  const w = Math.min(id === "settings" || id === "games" || id === "ai" ? 1020 : id === "browser" ? 1000 : 520, innerWidth - 16);
-  const h = Math.min(id === "settings" || id === "ai" ? 640 : id === "games" ? Math.min(innerHeight - 80, 820) : id === "browser" ? 640 : 380, innerHeight - 64);
+  const w = Math.min(
+    id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" ? 1020 :
+    id === "browser" ? 1000 :
+    id === "calc" ? 320 : id === "terminal" ? 720 : 520,
+    innerWidth - 16
+  );
+  const h = Math.min(
+    id === "settings" || id === "ai" || id === "files" || id === "notes" ? 640 :
+    id === "games" ? Math.min(innerHeight - 80, 820) :
+    id === "browser" ? 640 :
+    id === "calc" ? 440 : id === "terminal" ? 480 : 380,
+    innerHeight - 64
+  );
   win.style.width = w + "px";
   win.style.height = h + "px";
   win.style.left = Math.max(8, (innerWidth - w) / 2) + "px";
@@ -326,6 +357,11 @@ function openApp(id) {
   else if (app.icon === "WEB") wicon = `<div class="wicon" style="background:#2563eb;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg></div>`;
   else if (app.icon === "GAME") wicon = `<div class="wicon" style="background:#333;padding:2px"><img src="${GAMES_ICON}" alt="" style="width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1)"></div>`;
   else if (app.icon === "AI") wicon = `<div class="wicon" style="background:linear-gradient(135deg,#60cdff,#8b5cf6)"></div>`;
+  else if (app.icon === "FILES") wicon = `<div class="wicon" style="background:#e8a317;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
+  else if (app.icon === "NOTES") wicon = `<div class="wicon" style="background:#f5c542;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#1a1a1a" stroke-width="2"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4"/></svg></div>`;
+  else if (app.icon === "CALC") wicon = `<div class="wicon" style="background:#2a2a2a;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg></div>`;
+  else if (app.icon === "TERM") wicon = `<div class="wicon" style="background:#111;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#4ec9b0" stroke-width="2"><path d="M7 10l3 2-3 2M12 14h5"/></svg></div>`;
+  else if (app.icon === "FLIX") wicon = `<div class="wicon" style="background:#e50914;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M10 9l5 3-5 3V9z"/></svg></div>`;
   else wicon = `<div class="wicon"></div>`;
 
   win.innerHTML = `
@@ -345,6 +381,10 @@ function openApp(id) {
   else if (id === "browser") renderBrowser(body);
   else if (id === "games") renderGames(body);
   else if (id === "ai") renderMountAI(body);
+  else if (id === "files") renderFiles(body);
+  else if (id === "notes") renderNotes(body);
+  else if (id === "calc") renderCalc(body);
+  else if (id === "terminal") renderTerminal(body);
   else body.innerHTML = `<div style="padding:16px">${app.name}</div>`;
 
   document.getElementById("windows").appendChild(win);
@@ -397,33 +437,55 @@ function focusWin(win) {
   renderTaskbar();
 }
 
+function tbIconHTML(app) {
+  if (!app) return "*";
+  if (app.icon === "GEAR") return `<span class="gear-ico"><img src="${GEAR_URL}" alt=""></span>`;
+  if (app.icon === "WEB") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`;
+  if (app.icon === "GAME") return `<img src="${GAMES_ICON}" alt="" style="width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)">`;
+  if (app.icon === "AI") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg>`;
+  if (app.icon === "FILES") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e8a317" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>`;
+  if (app.icon === "NOTES") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f5c542" stroke-width="1.8"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4M8 12h8M8 16h6"/></svg>`;
+  if (app.icon === "CALC") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ccc" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/></svg>`;
+  if (app.icon === "TERM") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4ec9b0" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10l3 2-3 2M12 14h5"/></svg>`;
+  if (app.icon === "FLIX") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e50914" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg>`;
+  return app.name[0];
+}
+
+// Always pinned on the taskbar
+const TASKBAR_PINNED = ["files", "notes", "calc", "terminal"];
+
 function renderTaskbar() {
   const bar = document.getElementById("task-apps");
   bar.innerHTML = "";
-  openWins.forEach((win, id) => {
+
+  const shown = new Set();
+
+  function addBtn(id, pinned) {
+    if (shown.has(id)) return;
+    shown.add(id);
     const app = APPS.find(a => a.id === id);
+    const win = openWins.get(id);
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "tb" + (win.classList.contains("active") && win.style.visibility !== "hidden" ? " active" : "");
+    const isOpen = !!win;
+    const isActive = win && win.classList.contains("active") && win.style.visibility !== "hidden";
+    b.className = "tb" + (isActive ? " active" : "") + (isOpen ? " open" : "") + (pinned ? " pinned" : "");
     b.title = app ? app.name : id;
-    if (app && app.icon === "GEAR") {
-      b.innerHTML = `<span class="gear-ico"><img src="${GEAR_URL}" alt=""></span>`;
-    } else if (app && app.icon === "WEB") {
-      b.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`;
-    } else if (app && app.icon === "GAME") {
-      b.innerHTML = `<img src="${GAMES_ICON}" alt="" style="width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)">`;
-    } else if (app && app.icon === "AI") {
-      b.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg>`;
-    } else {
-      b.textContent = app ? app.name[0] : "*";
-    }
+    b.innerHTML = tbIconHTML(app);
     b.onclick = () => {
+      if (!win) {
+        openApp(id);
+        return;
+      }
       if (win.style.visibility === "hidden") { win.style.visibility = "visible"; focusWin(win); }
       else if (win.classList.contains("active")) { win.style.visibility = "hidden"; renderTaskbar(); }
       else focusWin(win);
     };
     bar.appendChild(b);
-  });
+  }
+
+  TASKBAR_PINNED.forEach(id => addBtn(id, true));
+  openWins.forEach((win, id) => addBtn(id, false));
 }
 
 
@@ -655,86 +717,6 @@ function renderGames(root) {
   const playingTitle = root.querySelector("#games-playing-title");
   let all = [];
 
-  // Cache resolved icon URLs so they appear instantly next time
-  var iconCache = {};
-  try { iconCache = JSON.parse(localStorage.getItem("mount_game_icons") || "{}") || {}; } catch (e) {}
-  function saveIconCache() {
-    try { localStorage.setItem("mount_game_icons", JSON.stringify(iconCache)); } catch (e) {}
-  }
-
-  function resolveGameIcon(g, img) {
-    var cached = iconCache[g.id];
-    if (cached === "") {
-      img.remove();
-      return;
-    }
-    if (cached) {
-      img.src = cached;
-      img.onload = function () {
-        if (img.naturalWidth >= 24) img.classList.add("ok");
-        else { iconCache[g.id] = ""; saveIconCache(); img.remove(); }
-      };
-      img.onerror = function () {
-        delete iconCache[g.id];
-        saveIconCache();
-        resolveGameIcon(g, img); // retry discovery
-      };
-      return;
-    }
-
-    var base = "https://class6x.gitlab.io/" + g.id + "/";
-    // Prioritized list — most common successes first
-    var candidates = [
-      base + "logo.png",
-      base + "icon-256.png",
-      base + "icons/icon-256.png",
-      base + "favicon.png",
-      base + "thumbnail.jpg",
-      base + "icon-128.png",
-      base + "icons/icon-128.png",
-      base + "html5game/splash.png",
-      base + "html5game/bh5logo.png",
-      base + "patch/ubg235/logo_512.png",
-      base + "splash.png",
-      base + "icons/loading-logo.png",
-      base + "favicon.ico",
-      base + "icon.png",
-      base + "screenshots/1-small.jpg"
-    ];
-
-    var settled = false;
-    var remaining = candidates.length;
-
-    function failOne() {
-      remaining--;
-      if (!settled && remaining <= 0) {
-        settled = true;
-        iconCache[g.id] = "";
-        saveIconCache();
-        img.remove();
-      }
-    }
-
-    // Race the top candidates in parallel for speed
-    candidates.forEach(function (url) {
-      var probe = new Image();
-      probe.onload = function () {
-        if (settled) return;
-        if (probe.naturalWidth >= 24 && probe.naturalHeight >= 24) {
-          settled = true;
-          iconCache[g.id] = url;
-          saveIconCache();
-          img.src = url;
-          img.onload = function () { img.classList.add("ok"); };
-        } else {
-          failOne();
-        }
-      };
-      probe.onerror = failOne;
-      probe.src = url;
-    });
-  }
-
   function paint(q) {
     q = (q || "").trim().toLowerCase();
     const list = !q ? all : all.filter(g => g.name.toLowerCase().includes(q) || g.id.includes(q));
@@ -746,13 +728,16 @@ function renderGames(root) {
       b.type = "button";
       b.className = "game-tile";
       const letter = (g.name || "?").trim().charAt(0).toUpperCase() || "?";
+      // Every game has a local logo in game-icons/
+      const iconSrc = "game-icons/" + g.id + ".png";
       b.innerHTML = `<div class="game-thumb" style="background:${gameColor(g.id)}">` +
         `<span class="game-letter">${letter}</span>` +
-        `<img class="game-icon" alt="" decoding="async" />` +
+        `<img class="game-icon" alt="" loading="eager" decoding="async" src="${iconSrc}" />` +
         `</div><span class="game-name"></span>`;
       b.querySelector(".game-name").textContent = g.name;
       const img = b.querySelector(".game-icon");
-      resolveGameIcon(g, img);
+      img.onload = function () { img.classList.add("ok"); };
+      img.onerror = function () { img.remove(); };
       b.title = g.name;
       b.onclick = () => playGame(g);
       frag.appendChild(b);
@@ -804,6 +789,933 @@ function renderMountAI(root) {
   }
   root.querySelector("#ai-refresh").onclick = load;
   load();
+}
+
+/* ── per-user helpers for Files / Notes ── */
+function userData() {
+  const u = currentUser();
+  if (!u) return null;
+  if (!u.data) u.data = {};
+  return u.data;
+}
+function defaultFS() {
+  return {
+    type: "folder",
+    name: "Home",
+    children: [
+      { type: "folder", name: "Desktop", children: [] },
+      { type: "folder", name: "Documents", children: [
+        { type: "file", name: "Welcome.txt", content: "Welcome to Mount OS File Explorer.\n\nCreate folders and text files here.\nDrop an image onto the window to set wallpaper." }
+      ]},
+      { type: "folder", name: "Downloads", children: [] },
+      { type: "folder", name: "Music", children: [] },
+      { type: "folder", name: "Pictures", children: [] },
+      { type: "folder", name: "Videos", children: [] },
+      { type: "folder", name: "Config", children: [] },
+      { type: "folder", name: "System", children: [] }
+    ]
+  };
+}
+function ensureFS() {
+  const d = userData();
+  if (!d) return defaultFS();
+  if (!d.fs || !d.fs.children || d.fs.children.length < 5) d.fs = defaultFS();
+  return d.fs;
+}
+function ensureNotes() {
+  const d = userData();
+  if (!d) return [];
+  if (!Array.isArray(d.notes)) d.notes = [{ id: "n1", title: "Welcome", body: "Your notes are saved to this user account.", updated: Date.now() }];
+  return d.notes;
+}
+
+function renderFiles(root) {
+  const fs = ensureFS();
+  let path = []; // stack of folder nodes under Home
+  let selected = null;
+  let view = "home"; // home | folder | trash
+  let trash = (userData() && userData().trash) || [];
+  if (userData()) userData().trash = trash;
+
+  const FOLDER_SVG = `<svg class="fe-folder-svg" viewBox="0 0 64 64" width="56" height="56"><path fill="#f5c518" d="M6 14c0-3.3 2.7-6 6-6h12l4 5h24c3.3 0 6 2.7 6 6v30c0 3.3-2.7 6-6 6H12c-3.3 0-6-2.7-6-6V14z"/><path fill="#ffd54a" d="M6 22h52v28c0 3.3-2.7 6-6 6H12c-3.3 0-6-2.7-6-6V22z"/></svg>`;
+  const FILE_SVG = `<svg class="fe-file-svg" viewBox="0 0 64 64" width="48" height="48"><path fill="#8ab4f8" d="M14 6h24l12 12v40c0 2.2-1.8 4-4 4H14c-2.2 0-4-1.8-4-4V10c0-2.2 1.8-4 4-4z"/><path fill="#b6d0ff" d="M38 6v12h12"/></svg>`;
+
+  root.innerHTML = `
+    <div class="fe-app">
+      <div class="fe-top">
+        <button type="button" class="fe-nav-btn" id="fe-back" title="Back">←</button>
+        <button type="button" class="fe-nav-btn" id="fe-up" title="Up">↑</button>
+        <div class="fe-path" id="fe-path">
+          <span class="fe-path-seg">Home</span>
+        </div>
+        <div class="fe-search-wrap">
+          <input id="fe-search" type="search" placeholder="Search..." />
+        </div>
+      </div>
+      <div class="fe-body">
+        <aside class="fe-sidebar">
+          <div class="fe-side-label">Quick Access</div>
+          <button type="button" class="fe-side-item active" data-nav="home">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>
+            Home
+          </button>
+          <button type="button" class="fe-side-item" data-nav="Desktop">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/></svg>
+            Desktop
+          </button>
+          <button type="button" class="fe-side-item" data-nav="Downloads">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v10M8 10l4 4 4-4M5 18h14"/></svg>
+            Downloads
+          </button>
+          <button type="button" class="fe-side-item" data-nav="Documents">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6V3z"/><path d="M14 3v4h4"/></svg>
+            Documents
+          </button>
+          <button type="button" class="fe-side-item" data-nav="Pictures">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg>
+            Pictures
+          </button>
+          <button type="button" class="fe-side-item" data-nav="Music">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="16" r="2"/></svg>
+            Music
+          </button>
+          <button type="button" class="fe-side-item" data-nav="Videos">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="14" height="12" rx="1"/><path d="M17 10l4-2v8l-4-2"/></svg>
+            Videos
+          </button>
+          <div class="fe-side-label">This PC</div>
+          <button type="button" class="fe-side-item" data-nav="home">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4zM8 18v2M16 18v2M4 10h16"/></svg>
+            Local Disk (C:)
+          </button>
+          <button type="button" class="fe-side-item" data-nav="System">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v10H4zM9 20h6"/></svg>
+            System
+          </button>
+          <div class="fe-side-spacer"></div>
+          <button type="button" class="fe-side-item" data-nav="trash">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14M9 7V5h6v2M8 7l1 12h6l1-12"/></svg>
+            Trash
+          </button>
+        </aside>
+        <div class="fe-content">
+          <div class="fe-toolbar-actions">
+            <button type="button" id="fe-new-folder">New folder</button>
+            <button type="button" id="fe-new-file">New text file</button>
+            <button type="button" id="fe-upload">Upload file</button>
+            <button type="button" id="fe-run">Open / Run</button>
+            <button type="button" id="fe-delete" class="danger">Delete</button>
+            <input type="file" id="fe-file-input" multiple hidden />
+          </div>
+          <div class="fe-grid" id="fe-grid"></div>
+          <div class="fe-status" id="fe-status">0 items</div>
+          <div id="fe-editor-wrap" class="fe-editor-wrap" hidden>
+            <div class="fe-editor-bar">
+              <span id="fe-edit-name"></span>
+              <button type="button" id="fe-save">Save</button>
+              <button type="button" id="fe-close-editor">Close</button>
+            </div>
+            <textarea id="fe-editor" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const grid = root.querySelector("#fe-grid");
+  const pathEl = root.querySelector("#fe-path");
+  const status = root.querySelector("#fe-status");
+  const search = root.querySelector("#fe-search");
+  const editorWrap = root.querySelector("#fe-editor-wrap");
+  const editor = root.querySelector("#fe-editor");
+  const editName = root.querySelector("#fe-edit-name");
+
+  function currentFolder() {
+    if (view === "trash") return { name: "Trash", children: trash };
+    let node = fs;
+    for (const p of path) node = p;
+    return node;
+  }
+
+  function goHome() {
+    path = [];
+    view = "home";
+    selected = null;
+    editorWrap.hidden = true;
+    paint();
+  }
+
+  function goNamed(name) {
+    if (name === "home") return goHome();
+    if (name === "trash") {
+      view = "trash";
+      path = [];
+      selected = null;
+      editorWrap.hidden = true;
+      paint();
+      return;
+    }
+    const folder = (fs.children || []).find(c => c.type === "folder" && c.name === name);
+    if (folder) {
+      path = [folder];
+      view = "folder";
+      selected = null;
+      editorWrap.hidden = true;
+      paint();
+    }
+  }
+
+  function paintPath() {
+    pathEl.innerHTML = "";
+    const segs = view === "trash" ? ["Trash"] : ["Home"].concat(path.map(p => p.name));
+    segs.forEach((name, i) => {
+      if (i > 0) {
+        const sep = document.createElement("span");
+        sep.className = "fe-path-sep";
+        sep.textContent = " › ";
+        pathEl.appendChild(sep);
+      }
+      const s = document.createElement("button");
+      s.type = "button";
+      s.className = "fe-path-seg";
+      s.textContent = name;
+      s.onclick = () => {
+        if (view === "trash") return;
+        path = path.slice(0, i);
+        view = path.length ? "folder" : "home";
+        selected = null;
+        editorWrap.hidden = true;
+        paint();
+      };
+      pathEl.appendChild(s);
+    });
+  }
+
+  function paintSide() {
+    const activeName = view === "trash" ? "trash" : (path.length ? path[path.length - 1].name : "home");
+    root.querySelectorAll(".fe-side-item").forEach(btn => {
+      const nav = btn.getAttribute("data-nav");
+      btn.classList.toggle("active", nav === activeName || (activeName === "home" && nav === "home" && btn.textContent.trim().startsWith("Home")));
+    });
+  }
+
+  function paintGrid() {
+    const folder = currentFolder();
+    let kids = (folder.children || []).slice();
+    const q = (search.value || "").trim().toLowerCase();
+    if (q) kids = kids.filter(k => (k.name || "").toLowerCase().includes(q));
+    grid.innerHTML = "";
+    status.textContent = kids.length + (kids.length === 1 ? " item" : " items");
+    if (!kids.length) {
+      grid.innerHTML = `<div class="fe-empty">This folder is empty</div>`;
+      return;
+    }
+    kids.forEach(item => {
+      const tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "fe-tile" + (selected === item ? " selected" : "");
+      tile.innerHTML = (item.type === "folder" ? FOLDER_SVG : FILE_SVG) + `<span class="fe-tile-name"></span>`;
+      tile.querySelector(".fe-tile-name").textContent = item.name;
+      tile.onclick = () => {
+        selected = item;
+        paintGrid();
+      };
+      tile.ondblclick = () => {
+        selected = item;
+        paintGrid();
+        runItem(item);
+      };
+      grid.appendChild(tile);
+    });
+  }
+
+  function fileKind(name) {
+    const n = (name || "").toLowerCase();
+    if (/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(n)) return "image";
+    if (/\.(mp4|webm|ogg|mov)$/.test(n)) return "video";
+    if (/\.(mp3|wav|ogg|m4a|flac)$/.test(n)) return "audio";
+    if (/\.(html?|htm)$/.test(n)) return "html";
+    if (/\.(txt|md|json|csv|log|js|css|xml|py|c|cpp|h|java|rs|go)$/.test(n)) return "text";
+    if (/\.(pdf)$/.test(n)) return "pdf";
+    return "binary";
+  }
+
+  function runItem(item) {
+    if (!item || item.type === "folder") {
+      if (item && item.type === "folder" && view !== "trash") {
+        path.push(item);
+        view = "folder";
+        selected = null;
+        editorWrap.hidden = true;
+        paint();
+      }
+      return;
+    }
+    const kind = fileKind(item.name);
+    if (kind === "text" || (!item.dataUrl && item.content != null && kind !== "binary")) {
+      editorWrap.hidden = false;
+      editName.textContent = item.name;
+      editor.value = item.content || "";
+      return;
+    }
+    if (item.dataUrl) {
+      if (kind === "image") {
+        editorWrap.hidden = false;
+        editName.textContent = item.name;
+        editor.value = "";
+        editorWrap.querySelector("#fe-editor").hidden = true;
+        let prev = editorWrap.querySelector(".fe-media-preview");
+        if (!prev) {
+          prev = document.createElement("div");
+          prev.className = "fe-media-preview";
+          editorWrap.appendChild(prev);
+        }
+        prev.hidden = false;
+        prev.innerHTML = `<img src="${item.dataUrl}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" />`;
+        return;
+      }
+      if (kind === "video") {
+        editorWrap.hidden = false;
+        editName.textContent = item.name;
+        editor.hidden = true;
+        let prev = editorWrap.querySelector(".fe-media-preview");
+        if (!prev) {
+          prev = document.createElement("div");
+          prev.className = "fe-media-preview";
+          editorWrap.appendChild(prev);
+        }
+        prev.hidden = false;
+        prev.innerHTML = `<video src="${item.dataUrl}" controls style="max-width:100%;max-height:100%"></video>`;
+        return;
+      }
+      if (kind === "audio") {
+        editorWrap.hidden = false;
+        editName.textContent = item.name;
+        editor.hidden = true;
+        let prev = editorWrap.querySelector(".fe-media-preview");
+        if (!prev) {
+          prev = document.createElement("div");
+          prev.className = "fe-media-preview";
+          editorWrap.appendChild(prev);
+        }
+        prev.hidden = false;
+        prev.innerHTML = `<audio src="${item.dataUrl}" controls style="width:90%"></audio>`;
+        return;
+      }
+      if (kind === "html") {
+        // open in browser app via blob
+        try {
+          const w = window.open();
+          if (w) {
+            w.document.write(item.content || atob((item.dataUrl.split(",")[1] || "")));
+            w.document.close();
+          }
+        } catch (e) {
+          editorWrap.hidden = false;
+          editName.textContent = item.name;
+          editor.hidden = false;
+          editor.value = item.content || "[HTML file — open failed]";
+        }
+        return;
+      }
+      // generic download/open
+      const a = document.createElement("a");
+      a.href = item.dataUrl;
+      a.download = item.name;
+      a.target = "_blank";
+      a.click();
+      return;
+    }
+    // fallback text editor
+    editorWrap.hidden = false;
+    editName.textContent = item.name;
+    editor.hidden = false;
+    const prev = editorWrap.querySelector(".fe-media-preview");
+    if (prev) prev.hidden = true;
+    editor.value = item.content || "";
+  }
+
+  function paint() {
+    paintPath();
+    paintSide();
+    paintGrid();
+    save();
+  }
+
+  root.querySelectorAll(".fe-side-item").forEach(btn => {
+    btn.onclick = () => goNamed(btn.getAttribute("data-nav"));
+  });
+  root.querySelector("#fe-back").onclick = root.querySelector("#fe-up").onclick = () => {
+    if (view === "trash") { goHome(); return; }
+    if (path.length) {
+      path.pop();
+      view = path.length ? "folder" : "home";
+      selected = null;
+      editorWrap.hidden = true;
+      paint();
+    }
+  };
+  root.querySelector("#fe-new-folder").onclick = () => {
+    if (view === "trash") return;
+    const name = prompt("Folder name");
+    if (!name || !name.trim()) return;
+    const folder = currentFolder();
+    if (!folder.children) folder.children = [];
+    folder.children.push({ type: "folder", name: name.trim(), children: [] });
+    paint();
+  };
+  root.querySelector("#fe-new-file").onclick = () => {
+    if (view === "trash") return;
+    const name = prompt("File name", "Note.txt");
+    if (!name || !name.trim()) return;
+    let n = name.trim();
+    if (!/\.[a-z0-9]+$/i.test(n)) n += ".txt";
+    const folder = currentFolder();
+    if (!folder.children) folder.children = [];
+    folder.children.push({ type: "file", name: n, content: "" });
+    paint();
+  };
+  const fileInput = root.querySelector("#fe-file-input");
+  root.querySelector("#fe-upload").onclick = () => {
+    if (view === "trash") return;
+    fileInput.click();
+  };
+  fileInput.onchange = () => {
+    const files = Array.from(fileInput.files || []);
+    if (!files.length) return;
+    const folder = currentFolder();
+    if (!folder.children) folder.children = [];
+    let left = files.length;
+    files.forEach(file => {
+      if (file.size > 4 * 1024 * 1024) {
+        alert(file.name + " is too large (max 4 MB for local storage).");
+        left--;
+        if (left <= 0) paint();
+        return;
+      }
+      const reader = new FileReader();
+      const isText = /^(text\/|application\/(json|javascript|xml))/.test(file.type) || /\.(txt|md|json|csv|log|js|css|html?|xml|py)$/i.test(file.name);
+      reader.onload = () => {
+        const entry = { type: "file", name: file.name, mime: file.type || "application/octet-stream", size: file.size };
+        if (isText) {
+          entry.content = reader.result;
+        } else {
+          entry.dataUrl = reader.result;
+        }
+        folder.children.push(entry);
+        left--;
+        if (left <= 0) paint();
+      };
+      reader.onerror = () => { left--; if (left <= 0) paint(); };
+      if (isText) reader.readAsText(file);
+      else reader.readAsDataURL(file);
+    });
+    fileInput.value = "";
+  };
+  root.querySelector("#fe-run").onclick = () => {
+    if (selected) runItem(selected);
+  };
+  root.querySelector("#fe-delete").onclick = () => {
+    if (!selected) return;
+    if (view === "trash") {
+      trash = trash.filter(c => c !== selected);
+      if (userData()) userData().trash = trash;
+    } else {
+      const folder = currentFolder();
+      folder.children = (folder.children || []).filter(c => c !== selected);
+      trash.push(selected);
+      if (userData()) userData().trash = trash;
+    }
+    selected = null;
+    editorWrap.hidden = true;
+    paint();
+  };
+  root.querySelector("#fe-save").onclick = () => {
+    if (selected && selected.type === "file") {
+      selected.content = editor.value;
+      save();
+    }
+  };
+  root.querySelector("#fe-close-editor").onclick = () => {
+    editorWrap.hidden = true;
+    editor.hidden = false;
+    const prev = editorWrap.querySelector(".fe-media-preview");
+    if (prev) { prev.hidden = true; prev.innerHTML = ""; }
+  };
+  search.oninput = () => paintGrid();
+
+  // drop image anywhere in content to set wallpaper
+  const content = root.querySelector(".fe-content");
+  ;["dragenter","dragover"].forEach(ev => {
+    content.addEventListener(ev, e => { e.preventDefault(); content.classList.add("fe-drag"); });
+  });
+  ;["dragleave","drop"].forEach(ev => {
+    content.addEventListener(ev, e => { e.preventDefault(); content.classList.remove("fe-drag"); });
+  });
+  content.addEventListener("drop", e => {
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        state.settings.wallpaper = reader.result;
+        save();
+        applyWallpaper();
+      } catch (err) {}
+    };
+    reader.readAsDataURL(file);
+  });
+
+  paint();
+}
+
+function renderNotes(root) {
+  const notes = ensureNotes();
+  let activeId = notes[0] ? notes[0].id : null;
+
+  root.innerHTML = `
+    <div class="notes-app">
+      <div class="notes-sidebar">
+        <div class="notes-side-bar">
+          <button type="button" id="note-new">+ New</button>
+        </div>
+        <div class="notes-list" id="notes-list"></div>
+      </div>
+      <div class="notes-editor">
+        <input id="note-title" type="text" placeholder="Title" />
+        <textarea id="note-body" placeholder="Start writing…"></textarea>
+        <div class="notes-footer">
+          <span id="note-status">Saved</span>
+          <button type="button" id="note-delete" class="danger">Delete</button>
+        </div>
+      </div>
+    </div>`;
+
+  const listEl = root.querySelector("#notes-list");
+  const titleEl = root.querySelector("#note-title");
+  const bodyEl = root.querySelector("#note-body");
+  const status = root.querySelector("#note-status");
+
+  function uid() { return "n_" + Math.random().toString(36).slice(2, 9); }
+
+  function paintList() {
+    listEl.innerHTML = "";
+    notes.forEach(n => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "notes-item" + (n.id === activeId ? " active" : "");
+      const preview = (n.body || "").trim().slice(0, 60) || "Empty note";
+      b.innerHTML = `<b></b><span></span>`;
+      b.querySelector("b").textContent = n.title || "Untitled";
+      b.querySelector("span").textContent = preview;
+      b.onclick = () => { activeId = n.id; paintList(); paintEditor(); };
+      listEl.appendChild(b);
+    });
+  }
+
+  function active() { return notes.find(n => n.id === activeId); }
+
+  function paintEditor() {
+    const n = active();
+    if (!n) {
+      titleEl.value = "";
+      bodyEl.value = "";
+      titleEl.disabled = bodyEl.disabled = true;
+      return;
+    }
+    titleEl.disabled = bodyEl.disabled = false;
+    titleEl.value = n.title || "";
+    bodyEl.value = n.body || "";
+    status.textContent = "Saved";
+  }
+
+  function persist() {
+    const n = active();
+    if (!n) return;
+    n.title = titleEl.value;
+    n.body = bodyEl.value;
+    n.updated = Date.now();
+    save();
+    status.textContent = "Saved";
+    paintList();
+  }
+
+  let t = null;
+  function scheduleSave() {
+    status.textContent = "Saving…";
+    clearTimeout(t);
+    t = setTimeout(persist, 350);
+  }
+
+  titleEl.oninput = scheduleSave;
+  bodyEl.oninput = scheduleSave;
+
+  root.querySelector("#note-new").onclick = () => {
+    const n = { id: uid(), title: "New note", body: "", updated: Date.now() };
+    notes.unshift(n);
+    activeId = n.id;
+    save();
+    paintList();
+    paintEditor();
+    titleEl.focus();
+    titleEl.select();
+  };
+  root.querySelector("#note-delete").onclick = () => {
+    const n = active();
+    if (!n) return;
+    const i = notes.indexOf(n);
+    if (i >= 0) notes.splice(i, 1);
+    activeId = notes[0] ? notes[0].id : null;
+    save();
+    paintList();
+    paintEditor();
+  };
+
+  paintList();
+  paintEditor();
+}
+
+function renderCalc(root) {
+  root.innerHTML = `
+    <div class="calc-app">
+      <div class="calc-display" id="calc-display">0</div>
+      <div class="calc-keys">
+        <button type="button" data-k="C" class="calc-fn">C</button>
+        <button type="button" data-k="±" class="calc-fn">±</button>
+        <button type="button" data-k="%" class="calc-fn">%</button>
+        <button type="button" data-k="/" class="calc-op">÷</button>
+        <button type="button" data-k="7">7</button>
+        <button type="button" data-k="8">8</button>
+        <button type="button" data-k="9">9</button>
+        <button type="button" data-k="*" class="calc-op">×</button>
+        <button type="button" data-k="4">4</button>
+        <button type="button" data-k="5">5</button>
+        <button type="button" data-k="6">6</button>
+        <button type="button" data-k="-" class="calc-op">−</button>
+        <button type="button" data-k="1">1</button>
+        <button type="button" data-k="2">2</button>
+        <button type="button" data-k="3">3</button>
+        <button type="button" data-k="+" class="calc-op">+</button>
+        <button type="button" data-k="0" class="calc-zero">0</button>
+        <button type="button" data-k=".">.</button>
+        <button type="button" data-k="=" class="calc-eq">=</button>
+      </div>
+    </div>`;
+
+  const display = root.querySelector("#calc-display");
+  let cur = "0";
+  let prev = null;
+  let op = null;
+  let reset = false;
+
+  function show() {
+    display.textContent = cur;
+  }
+
+  function input(k) {
+    if (k === "C") { cur = "0"; prev = null; op = null; reset = false; show(); return; }
+    if (k === "±") { cur = String(-(parseFloat(cur) || 0)); show(); return; }
+    if (k === "%") { cur = String((parseFloat(cur) || 0) / 100); show(); return; }
+    if (k === "." ) {
+      if (reset) { cur = "0."; reset = false; show(); return; }
+      if (!cur.includes(".")) { cur += "."; show(); }
+      return;
+    }
+    if ("0123456789".includes(k)) {
+      if (reset || cur === "0") { cur = k; reset = false; }
+      else cur += k;
+      show();
+      return;
+    }
+    if ("+-*/".includes(k)) {
+      if (prev !== null && op && !reset) compute();
+      prev = parseFloat(cur);
+      op = k;
+      reset = true;
+      return;
+    }
+    if (k === "=") {
+      compute();
+      op = null;
+      prev = null;
+      reset = true;
+    }
+  }
+
+  function compute() {
+    if (prev === null || !op) return;
+    const a = prev;
+    const b = parseFloat(cur) || 0;
+    let r = 0;
+    if (op === "+") r = a + b;
+    else if (op === "-") r = a - b;
+    else if (op === "*") r = a * b;
+    else if (op === "/") r = b === 0 ? "Error" : a / b;
+    cur = typeof r === "number" ? String(parseFloat(r.toPrecision(12))) : r;
+    show();
+  }
+
+  root.querySelectorAll(".calc-keys button").forEach(btn => {
+    btn.onclick = () => input(btn.getAttribute("data-k"));
+  });
+}
+
+function renderMountFlix(root) {
+  // Legal free / public-domain / officially free sources only
+  const CATALOG = {
+    movies: [
+      { title: "Night of the Living Dead (1968)", tag: "Horror · Public domain", url: "https://archive.org/details/night_of_the_living_dead", thumb: "https://archive.org/services/img/night_of_the_living_dead" },
+      { title: "His Girl Friday (1940)", tag: "Comedy · Public domain", url: "https://archive.org/details/his_girl_friday", thumb: "https://archive.org/services/img/his_girl_friday" },
+      { title: "Charade (1963)", tag: "Mystery · Public domain", url: "https://archive.org/details/charade1963", thumb: "https://archive.org/services/img/charade1963" },
+      { title: "The General (1926)", tag: "Silent · Keaton", url: "https://archive.org/details/TheGeneral", thumb: "https://archive.org/services/img/TheGeneral" },
+      { title: "Plan 9 From Outer Space", tag: "Sci-fi · Public domain", url: "https://archive.org/details/Plan_9_from_Outer_Space_1959", thumb: "https://archive.org/services/img/Plan_9_from_Outer_Space_1959" },
+      { title: "Dementia 13 (1963)", tag: "Horror · Public domain", url: "https://archive.org/details/Dementia_13", thumb: "https://archive.org/services/img/Dementia_13" },
+      { title: "The Little Shop of Horrors (1960)", tag: "Comedy · Public domain", url: "https://archive.org/details/The_Little_Shop_of_Horrors_1960", thumb: "https://archive.org/services/img/The_Little_Shop_of_Horrors_1960" },
+      { title: "Angel and the Badman", tag: "Western · Public domain", url: "https://archive.org/details/AngelAndTheBadman", thumb: "https://archive.org/services/img/AngelAndTheBadman" }
+    ],
+    tv: [
+      { title: "The Twilight Zone (public episodes)", tag: "Classic TV", url: "https://archive.org/details/twilight-zone", thumb: "https://archive.org/services/img/twilight-zone" },
+      { title: "Classic TV Commercials", tag: "Nostalgia", url: "https://archive.org/details/classic_tv_commercials", thumb: "https://archive.org/services/img/classic_tv_commercials" },
+      { title: "Public Domain TV Series", tag: "Various", url: "https://archive.org/details/television", thumb: "https://archive.org/services/img/television" },
+      { title: "Vintage Sci-Fi TV", tag: "Sci-fi", url: "https://archive.org/details/SciFiTV", thumb: "https://archive.org/services/img/SciFiTV" }
+    ],
+    anime: [
+      { title: "Origin: Spirits of the Past (trailer / legal hubs)", tag: "Feature", url: "https://archive.org/search?query=anime%20public%20domain", thumb: "https://archive.org/services/img/anime" },
+      { title: "Internet Archive · Anime collection", tag: "Legal uploads", url: "https://archive.org/details/anime", thumb: "https://archive.org/services/img/anime" },
+      { title: "Creative Commons Anime shorts", tag: "CC", url: "https://archive.org/search?query=subject%3A%22anime%22%20AND%20mediatype%3Amovies", thumb: "https://archive.org/services/img/opensource_movies" },
+      { title: "Japan Foundation · Free culture films", tag: "Official", url: "https://www.youtube.com/@JapanFoundation", thumb: "" }
+    ],
+    manga: [
+      { title: "Internet Archive · Comics & manga", tag: "Public domain / open", url: "https://archive.org/details/manga", thumb: "https://archive.org/services/img/manga" },
+      { title: "Project Gutenberg · Illustrated books", tag: "Public domain", url: "https://www.gutenberg.org/ebooks/search/?query=illustrated", thumb: "" },
+      { title: "Internet Archive · Comic books", tag: "Golden age PD", url: "https://archive.org/details/comics", thumb: "https://archive.org/services/img/comics" },
+      { title: "Open Library · Graphic novels", tag: "Borrow / PD", url: "https://openlibrary.org/subjects/comics", thumb: "" }
+    ]
+  };
+
+  let tab = "movies";
+  let playing = null;
+
+  root.innerHTML = `
+    <div class="flix-app">
+      <div class="flix-top">
+        <div class="flix-logo">MOUNT<span>FLIX</span></div>
+        <nav class="flix-tabs">
+          <button type="button" data-tab="movies" class="active">Movies</button>
+          <button type="button" data-tab="tv">TV Shows</button>
+          <button type="button" data-tab="anime">Anime</button>
+          <button type="button" data-tab="manga">Manga</button>
+        </nav>
+        <input class="flix-search" id="flix-search" type="search" placeholder="Search titles..." />
+      </div>
+      <div class="flix-hero" id="flix-hero">
+        <div class="flix-hero-text">
+          <h2>Free & legal streaming</h2>
+          <p>Public-domain films, classic TV, and open collections via Internet Archive & friends. No piracy links.</p>
+        </div>
+      </div>
+      <div class="flix-row-title" id="flix-row-title">Movies</div>
+      <div class="flix-grid" id="flix-grid"></div>
+      <div class="flix-player" id="flix-player" hidden>
+        <div class="flix-player-bar">
+          <button type="button" id="flix-back">← Back</button>
+          <span id="flix-playing-title"></span>
+          <button type="button" id="flix-open-ext">Open source ↗</button>
+        </div>
+        <iframe id="flix-frame" class="flix-frame" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+    </div>`;
+
+  const grid = root.querySelector("#flix-grid");
+  const rowTitle = root.querySelector("#flix-row-title");
+  const player = root.querySelector("#flix-player");
+  const frame = root.querySelector("#flix-frame");
+  const playingTitle = root.querySelector("#flix-playing-title");
+  const search = root.querySelector("#flix-search");
+
+  function paint() {
+    const q = (search.value || "").trim().toLowerCase();
+    let list = CATALOG[tab] || [];
+    if (q) list = list.filter(x => (x.title + " " + x.tag).toLowerCase().includes(q));
+    rowTitle.textContent = ({ movies: "Movies", tv: "TV Shows", anime: "Anime", manga: "Manga" })[tab] || tab;
+    grid.innerHTML = "";
+    list.forEach(item => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "flix-card";
+      const thumb = item.thumb
+        ? `<img src="${item.thumb}" alt="" loading="lazy" onerror="this.style.display='none'" />`
+        : "";
+      card.innerHTML = `<div class="flix-thumb">${thumb}<div class="flix-thumb-fallback">${(item.title || "?")[0]}</div></div>
+        <div class="flix-card-title"></div>
+        <div class="flix-card-tag"></div>`;
+      card.querySelector(".flix-card-title").textContent = item.title;
+      card.querySelector(".flix-card-tag").textContent = item.tag;
+      card.onclick = () => play(item);
+      grid.appendChild(card);
+    });
+    if (!list.length) grid.innerHTML = `<div class="flix-empty">No titles match</div>`;
+  }
+
+  function play(item) {
+    playing = item;
+    playingTitle.textContent = item.title;
+    player.hidden = false;
+    // Prefer opening Archive.org embed when possible
+    let src = item.url;
+    if (/archive\.org\/details\//.test(src)) {
+      const id = src.split("/details/")[1].split(/[?#]/)[0];
+      src = "https://archive.org/embed/" + id;
+    }
+    frame.src = src;
+  }
+
+  root.querySelectorAll(".flix-tabs button").forEach(btn => {
+    btn.onclick = () => {
+      tab = btn.getAttribute("data-tab");
+      root.querySelectorAll(".flix-tabs button").forEach(b => b.classList.toggle("active", b === btn));
+      paint();
+    };
+  });
+  root.querySelector("#flix-back").onclick = () => {
+    frame.src = "about:blank";
+    player.hidden = true;
+    playing = null;
+  };
+  root.querySelector("#flix-open-ext").onclick = () => {
+    if (playing && playing.url) window.open(playing.url, "_blank", "noopener");
+  };
+  search.oninput = paint;
+  paint();
+}
+
+
+function renderTerminal(root) {
+  const u = currentUser();
+  const userName = (u && u.name) ? u.name : "guest";
+  root.innerHTML = `
+    <div class="term-app">
+      <div class="term-out" id="term-out"></div>
+      <div class="term-input-row">
+        <span class="term-prompt" id="term-prompt"></span>
+        <input class="term-input" id="term-input" type="text" spellcheck="false" autocomplete="off" />
+      </div>
+    </div>`;
+  const out = root.querySelector("#term-out");
+  const input = root.querySelector("#term-input");
+  const promptEl = root.querySelector("#term-prompt");
+  let cwd = "~";
+  const history = [];
+  let histIdx = -1;
+
+  function setPrompt() {
+    promptEl.textContent = userName + "@mount:" + cwd + "$";
+  }
+  function line(html, cls) {
+    const d = document.createElement("div");
+    d.className = "term-line" + (cls ? " " + cls : "");
+    d.innerHTML = html;
+    out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+  }
+  function textLine(str, cls) {
+    const d = document.createElement("div");
+    d.className = "term-line" + (cls ? " " + cls : "");
+    d.textContent = str;
+    out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function neofetch() {
+    const games = (typeof GAMES_EMBEDDED !== "undefined" && GAMES_EMBEDDED) ? GAMES_EMBEDDED.length : "?";
+    const art = [
+      "        /\\",
+      "       /  \\      " + userName + "@mount-os",
+      "      /_/\\_\\     -----------",
+      "     /      \\    OS: Mount OS",
+      "    /   /\\   \\   Host: Browser",
+      "   /   /  \\   \\  Kernel: WebKit/Blink",
+      "  /___/    \\___\\ Shell: mount-sh",
+      "                 Font: Minecraft",
+      "                 Games: " + games,
+      "                 Theme: Dark",
+      "                 CPU: Your brain",
+      "                 Memory: localStorage"
+    ];
+    art.forEach(function (l) { textLine(l, "term-ok"); });
+  }
+
+  const HELP = "Commands: help, clear, neofetch, whoami, date, echo, ls, pwd, cd, games, open, fortune, uname, about";
+
+  function run(cmd) {
+    const raw = cmd.trim();
+    if (!raw) return;
+    line('<span class="term-cmd">' + promptEl.textContent + " " + raw.replace(/</g,"&lt;") + "</span>");
+    history.push(raw);
+    histIdx = history.length;
+    const parts = raw.split(/\s+/);
+    const c = parts[0].toLowerCase();
+    const args = parts.slice(1);
+
+    if (c === "help" || c === "?") textLine(HELP, "term-info");
+    else if (c === "clear" || c === "cls") out.innerHTML = "";
+    else if (c === "neofetch" || c === "fetch") neofetch();
+    else if (c === "whoami") textLine(userName);
+    else if (c === "date") textLine(new Date().toString());
+    else if (c === "pwd") textLine(cwd === "~" ? "/home/" + userName : cwd);
+    else if (c === "uname") textLine("MountOS browser-x86_64");
+    else if (c === "about") textLine("Mount OS — a desktop in your browser. Built for games, files, and fun.", "term-info");
+    else if (c === "echo") textLine(args.join(" "));
+    else if (c === "ls") {
+      if (cwd === "~" || cwd === "/home/" + userName) textLine("Desktop  Documents  Downloads  Music  Pictures  Videos");
+      else textLine(".");
+    }
+    else if (c === "cd") {
+      const t = args[0] || "~";
+      if (t === "~" || t === "/" || t === "/home/" + userName) cwd = "~";
+      else if (t === ".." ) cwd = "~";
+      else cwd = t.replace(/^\//, "");
+      setPrompt();
+    }
+    else if (c === "games") {
+      textLine("Opening Games…", "term-ok");
+      try { openApp("games"); } catch (e) {}
+    }
+    else if (c === "open") {
+      const app = (args[0] || "").toLowerCase();
+      const map = { files: "files", explorer: "files", notes: "notes", calc: "calc", calculator: "calc", settings: "settings", browser: "browser", mount: "browser", games: "games", ai: "ai", terminal: "terminal" };
+      if (map[app]) { textLine("Opening " + map[app] + "…", "term-ok"); openApp(map[app]); }
+      else textLine("Usage: open [files|notes|calc|games|settings|browser|ai]", "term-err");
+    }
+    else if (c === "fortune") {
+      const lines = [
+        "The mountain does not climb itself.",
+        "404: motivation not found — try neofetch.",
+        "There is no cloud, only someone else's computer.",
+        "sudo make me a sandwich — permission denied.",
+        "In Mount OS, no one can hear you segfault."
+      ];
+      textLine(lines[Math.floor(Math.random() * lines.length)], "term-info");
+    }
+    else textLine("command not found: " + c + " — type help", "term-err");
+  }
+
+  setPrompt();
+  textLine("Mount OS Terminal — type help or neofetch", "term-info");
+  input.focus();
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      run(input.value);
+      input.value = "";
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (histIdx > 0) { histIdx--; input.value = history[histIdx] || ""; }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx] || ""; }
+      else { histIdx = history.length; input.value = ""; }
+    }
+  });
+  root.addEventListener("mousedown", function () { input.focus(); });
 }
 
 function renderSettings(root) {
