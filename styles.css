@@ -36,19 +36,20 @@ button, input, select, a, [role="button"], textarea { font-family: "Minecraft", 
 html, body { cursor: none; }
 
 #cursor {
-  position: fixed; width: 36px; height: 48px;
+  position: fixed; left: 0; top: 0;
+  width: 36px; height: 48px;
   border: 0; border-radius: 0; background: transparent;
   background-image: url("cursor.png");
   background-size: contain; background-repeat: no-repeat; background-position: center bottom;
   pointer-events: none; z-index: 99999;
-  transform: translate(-40%, -85%);
-  transition: width .12s, height .12s, transform .12s; opacity: 0;
+  will-change: transform;
+  transform: translate3d(-100px, -100px, 0);
+  opacity: 0;
   mix-blend-mode: normal;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45));
+  transition: none !important;
 }
-#cursor-ring {
-  display: none !important;
-}
+#cursor-ring { display: none !important; }
 #cursor.dot {
   width: 40px; height: 52px;
   background-image: url("cursor-alt.png");
@@ -56,7 +57,6 @@ html, body { cursor: none; }
 #cursor.click {
   width: 30px; height: 40px;
   background-image: url("cursor-click.png");
-  transform: translate(-40%, -85%) scale(0.92);
 }
 body.ready #cursor { opacity: 1; }
 
@@ -1055,3 +1055,90 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
   flex: 1; border: 0; background: transparent; color: #cccccc; outline: none;
   font-family: inherit; font-size: 13px; padding: 0 0 0 2px; caret-color: #fff;
 }
+
+
+/* ── Notifications ── */
+#taskbar-right { position: relative; }
+.tb-bell {
+  position: relative; width: 40px; height: 40px; border: 0; border-radius: 4px;
+  background: transparent; color: #eee; display: grid; place-items: center; cursor: pointer;
+}
+.tb-bell:hover { background: rgba(255,255,255,0.08); }
+.tb-badge {
+  position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 99px; background: #e81123; color: #fff; font-size: 10px; font-weight: 700;
+  display: grid; place-items: center; line-height: 1;
+}
+.tb-badge[hidden] { display: none !important; }
+.notif-panel {
+  position: absolute; right: 8px; bottom: calc(100% + 10px);
+  width: min(340px, calc(100vw - 24px)); max-height: 420px;
+  background: rgba(32,32,32,0.96); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+  display: flex; flex-direction: column; overflow: hidden; z-index: 2000;
+  animation: notif-in .2s ease;
+}
+.notif-panel[hidden] { display: none !important; }
+@keyframes notif-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.notif-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px;
+}
+.notif-head button {
+  border: 0; background: transparent; color: #60cdff; font-size: 12px; cursor: pointer;
+}
+.notif-list { overflow: auto; padding: 8px; }
+.notif-item {
+  text-align: left; width: 100%; border: 0; border-radius: 8px; padding: 10px 12px;
+  background: transparent; color: #eee; cursor: pointer; margin-bottom: 4px;
+}
+.notif-item:hover { background: rgba(255,255,255,0.06); }
+.notif-item.unread { background: rgba(96,205,255,0.08); }
+.notif-item .nf { font-size: 11px; color: #60cdff; margin-bottom: 2px; }
+.notif-item .nt { font-size: 13px; font-weight: 600; }
+.notif-item .nb { font-size: 12px; color: #aaa; margin-top: 2px; }
+.notif-item .nm { font-size: 11px; color: #777; margin-top: 4px; }
+.notif-empty { text-align: center; color: #777; padding: 28px; font-size: 13px; }
+
+/* ── Motion / animations ── */
+.window {
+  transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
+}
+.window.open { animation: win-in .22s cubic-bezier(.2,.8,.2,1); }
+@keyframes win-in {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.window.closing { opacity: 0; transform: scale(0.96) translateY(8px); }
+.desk-icon {
+  transition: transform .15s ease, background .15s ease, opacity .15s ease;
+}
+.desk-icon:hover { transform: translateY(-2px) scale(1.03); }
+.desk-icon:active { transform: scale(0.97); }
+.tb, .start-app, .fe-tile, .game-tile, .btn {
+  transition: background .15s ease, transform .12s ease, box-shadow .15s ease;
+}
+.start.open { animation: start-in .2s ease; }
+@keyframes start-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+#session.active { animation: fade-in .25s ease; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* web app icons */
+.desk-icon .ico.spotify-ico, .start-app .ico.spotify-ico { background: #1DB954; }
+.desk-icon .ico.discord-ico, .start-app .ico.discord-ico { background: #5865F2; }
+.desk-icon .ico.vscode-ico, .start-app .ico.vscode-ico { background: #007ACC; }
+.desk-icon .ico.gfn-ico, .start-app .ico.gfn-ico { background: linear-gradient(135deg,#76b900,#208b3a); }
+.desk-icon .ico.yt-ico, .start-app .ico.yt-ico { background: #FF0000; }
+.desk-icon .ico.github-ico, .start-app .ico.github-ico { background: #24292f; }
+.webapp-frame { width: 100%; height: 100%; border: 0; background: #111; }
+
+.proxy-banner {
+  position: absolute; left: 12px; right: 12px; top: 48px; z-index: 5;
+  background: rgba(30,30,30,0.95); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #ddd;
+  display: none;
+}
+.proxy-banner.show { display: block; animation: notif-in .2s ease; }

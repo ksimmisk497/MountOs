@@ -10,7 +10,13 @@ const APPS = [
   { id: "files", name: "File Explorer", icon: "FILES", pinned: true, desktop: false },
   { id: "notes", name: "Notes", icon: "NOTES", pinned: true, desktop: false },
   { id: "calc", name: "Calculator", icon: "CALC", pinned: true, desktop: false },
-  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false }
+  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false },
+  { id: "spotify", name: "Spotify", icon: "SPOTIFY", pinned: true, desktop: true, url: "https://open.spotify.com/" },
+  { id: "discord", name: "Discord", icon: "DISCORD", pinned: true, desktop: true, url: "https://discord.com/app" },
+  { id: "vscode", name: "VS Code", icon: "VSCODE", pinned: true, desktop: true, url: "https://vscode.dev/" },
+  { id: "gfn", name: "GeForce Now", icon: "GFN", pinned: true, desktop: true, url: "https://play.geforcenow.com/" },
+  { id: "youtube", name: "YouTube", icon: "YT", pinned: false, desktop: true, url: "https://www.youtube.com/" },
+  { id: "github", name: "GitHub", icon: "GITHUB", pinned: false, desktop: true, url: "https://github.com/" }
 ];
 
 function appIconHTML(icon, size) {
@@ -22,6 +28,12 @@ function appIconHTML(icon, size) {
   if (icon === "FILES") return `<div class="ico files-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
   if (icon === "NOTES") return `<div class="ico notes-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4M8 12h8M8 16h6"/></svg></div>`;
   if (icon === "CALC") return `<div class="ico calc-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15h0M8 19h2M12 19h2M16 19h0"/></svg></div>`;
+  if (icon === "SPOTIFY") return `<div class="ico spotify-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="#fff"><circle cx="12" cy="12" r="10"/><path d="M7 10c4-1 8-.5 10 1M7.5 13c3.5-.8 7-.3 8.5.8M8 16c2.5-.5 5-.2 6.5.5" fill="none" stroke="#1DB954" stroke-width="1.6" stroke-linecap="round"/></svg></div>`;
+  if (icon === "DISCORD") return `<div class="ico discord-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="#fff"><path d="M8 8c2-1 6-1 8 0l1 4c-1 2-2 3-3 3l-1-1c-1 .3-2 .3-3 0l-1 1c-1 0-2-1-3-3l2-4zm1.5 4a1 1 0 110-2 1 1 0 010 2zm5 0a1 1 0 110-2 1 1 0 010 2z"/></svg></div>`;
+  if (icon === "VSCODE") return `<div class="ico vscode-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.6"><path d="M4 6l8-3 8 4v10l-8 4-8-3V6z"/><path d="M12 3v18"/></svg></div>`;
+  if (icon === "GFN") return `<div class="ico gfn-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M4 8h10l6 4-6 4H4V8z"/><path d="M8 12h4"/></svg></div>`;
+  if (icon === "YT") return `<div class="ico yt-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="#fff"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M11 10l5 2-5 2V10z" fill="#FF0000"/></svg></div>`;
+  if (icon === "GITHUB") return `<div class="ico github-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="#fff"><path d="M12 3c-5 0-9 4-9 9 0 4 2.5 7.4 6 8.6.4.1.6-.2.6-.4v-1.5c-2.4.5-2.9-1-2.9-1-.4-1-1-1.2-1-1.2-.8-.6.1-.6.1-.6.9.1 1.4.9 1.4.9.8 1.4 2.2 1 2.7.8.1-.6.3-1 .6-1.2-2-.2-4.1-1-4.1-4.5 0-1 .3-1.8.9-2.4-.1-.2-.4-1.1.1-2.3 0 0 .8-.3 2.5.9a8.5 8.5 0 014.6 0c1.7-1.2 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.4 0 3.5-2.1 4.3-4.1 4.5.3.3.6.8.6 1.6v2.4c0 .2.2.5.6.4 3.5-1.2 6-4.6 6-8.6 0-5-4-9-9-9z"/></svg></div>`;
   if (icon === "TERM") return `<div class="ico term-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#4ec9b0" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10l3 2-3 2M12 14h5"/></svg></div>`;
   if (icon === "FLIX") return `<div class="ico flix-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg></div>`;
   return `<div class="ico">${icon}</div>`;
@@ -50,34 +62,29 @@ function save() {
 }
 
 
-/* Custom cursor */
+/* Custom cursor — direct GPU transform, no lag loop */
 (function () {
   const c = document.getElementById("cursor");
-  const r = document.getElementById("cursor-ring");
-  if (!c || !r) return;
-  let x = 0, y = 0, rx = 0, ry = 0;
-  document.addEventListener("mousemove", e => {
-    x = e.clientX; y = e.clientY;
-    c.style.left = x + "px"; c.style.top = y + "px";
+  if (!c) return;
+  const ring = document.getElementById("cursor-ring");
+  if (ring) ring.style.display = "none";
+  // Hotspot near feet of egg
+  const ox = 0.4, oy = 0.85;
+  function move(e) {
+    c.style.transform = "translate3d(" + (e.clientX - 36 * ox) + "px," + (e.clientY - 48 * oy) + "px,0)";
     document.body.classList.add("ready");
-  });
-  (function loop() {
-    rx += (x - rx) * 0.2;
-    ry += (y - ry) * 0.2;
-    r.style.left = rx + "px";
-    r.style.top = ry + "px";
-    requestAnimationFrame(loop);
-  })();
-  document.addEventListener("mousedown", () => c.classList.add("click"));
-  document.addEventListener("mouseup", () => c.classList.remove("click"));
-  document.addEventListener("mouseover", e => {
-    if (e.target.closest("button, input, select, a, .user-chip, .desk-icon, .tb, .snav, .browser-tab")) {
-      c.classList.add("dot"); r.classList.add("hover");
+  }
+  document.addEventListener("pointermove", move, { passive: true });
+  document.addEventListener("mousedown", function () { c.classList.add("click"); });
+  document.addEventListener("mouseup", function () { c.classList.remove("click"); });
+  document.addEventListener("mouseover", function (e) {
+    if (e.target.closest("button, input, select, a, .user-chip, .desk-icon, .tb, .tb-bell, .snav, .browser-tab, .fe-tile, .game-tile")) {
+      c.classList.add("dot");
     }
   });
-  document.addEventListener("mouseout", e => {
-    if (e.target.closest("button, input, select, a, .user-chip, .desk-icon, .tb, .snav, .browser-tab")) {
-      c.classList.remove("dot"); r.classList.remove("hover");
+  document.addEventListener("mouseout", function (e) {
+    if (e.target.closest("button, input, select, a, .user-chip, .desk-icon, .tb, .tb-bell, .snav, .browser-tab, .fe-tile, .game-tile")) {
+      c.classList.remove("dot");
     }
   });
 })();
@@ -374,6 +381,7 @@ function enterSession() {
   }
   closeStart();
   if (window.updateBgMusic) window.updateBgMusic();
+  setupNotificationsUI();
 }
 function lockSession() {
   openWins.forEach(win => win.remove());
@@ -480,13 +488,13 @@ function openApp(id) {
   win.className = "window";
   win.dataset.id = id;
   const w = Math.min(
-    id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" ? 1020 :
+    id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" || app.url ? 1020 :
     id === "browser" ? 1000 :
     id === "calc" ? 320 : id === "terminal" ? 900 : 520,
     innerWidth - 16
   );
   const h = Math.min(
-    id === "settings" || id === "ai" || id === "files" || id === "notes" ? 640 :
+    id === "settings" || id === "ai" || id === "files" || id === "notes" || app.url ? 640 :
     id === "games" ? Math.min(innerHeight - 80, 820) :
     id === "browser" ? 640 :
     id === "calc" ? 440 : id === "terminal" ? 560 : 380,
@@ -506,6 +514,12 @@ function openApp(id) {
   else if (app.icon === "FILES") wicon = `<div class="wicon" style="background:#e8a317;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
   else if (app.icon === "NOTES") wicon = `<div class="wicon" style="background:#f5c542;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#1a1a1a" stroke-width="2"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4"/></svg></div>`;
   else if (app.icon === "CALC") wicon = `<div class="wicon" style="background:#2a2a2a;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg></div>`;
+  else if (app.icon === "SPOTIFY") wicon = `<div class="wicon" style="background:#1DB954"></div>`;
+  else if (app.icon === "DISCORD") wicon = `<div class="wicon" style="background:#5865F2"></div>`;
+  else if (app.icon === "VSCODE") wicon = `<div class="wicon" style="background:#007ACC"></div>`;
+  else if (app.icon === "GFN") wicon = `<div class="wicon" style="background:#76b900"></div>`;
+  else if (app.icon === "YT") wicon = `<div class="wicon" style="background:#FF0000"></div>`;
+  else if (app.icon === "GITHUB") wicon = `<div class="wicon" style="background:#333"></div>`;
   else if (app.icon === "TERM") wicon = `<div class="wicon" style="background:#111;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#4ec9b0" stroke-width="2"><path d="M7 10l3 2-3 2M12 14h5"/></svg></div>`;
   else if (app.icon === "FLIX") wicon = `<div class="wicon" style="background:#e50914;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M10 9l5 3-5 3V9z"/></svg></div>`;
   else wicon = `<div class="wicon"></div>`;
@@ -531,6 +545,7 @@ function openApp(id) {
   else if (id === "notes") renderNotes(body);
   else if (id === "calc") renderCalc(body);
   else if (id === "terminal") renderTerminal(body);
+  else if (app.url) renderWebApp(body, app);
   else body.innerHTML = `<div style="padding:16px">${app.name}</div>`;
 
   document.getElementById("windows").appendChild(win);
@@ -595,6 +610,12 @@ function tbIconHTML(app) {
   if (app.icon === "FILES") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e8a317" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>`;
   if (app.icon === "NOTES") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f5c542" stroke-width="1.8"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4M8 12h8M8 16h6"/></svg>`;
   if (app.icon === "CALC") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ccc" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/></svg>`;
+  if (app.icon === "SPOTIFY") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="#1DB954"><circle cx="12" cy="12" r="10"/></svg>`;
+  if (app.icon === "DISCORD") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="#5865F2"><circle cx="12" cy="12" r="10"/></svg>`;
+  if (app.icon === "VSCODE") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="#007ACC"><circle cx="12" cy="12" r="10"/></svg>`;
+  if (app.icon === "GFN") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="#76b900"><circle cx="12" cy="12" r="10"/></svg>`;
+  if (app.icon === "YT") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="#FF0000"><circle cx="12" cy="12" r="10"/></svg>`;
+  if (app.icon === "GITHUB") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="#ccc"><circle cx="12" cy="12" r="10"/></svg>`;
   if (app.icon === "TERM") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4ec9b0" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10l3 2-3 2M12 14h5"/></svg>`;
   if (app.icon === "FLIX") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e50914" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg>`;
   return app.name[0];
@@ -2255,6 +2276,146 @@ state.sessionUserId = null;
 save();
 showScreen("lock");
 startAnimatedWallpaper();
+setupNotificationsUI();
+
+
+function renderWebApp(root, app) {
+  const url = app.url || "about:blank";
+  root.innerHTML = `
+    <div style="display:flex;flex-direction:column;height:100%;background:#111">
+      <div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:#1c1c1c;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
+        <span style="font-size:12px;color:#aaa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button type="button" class="btn" id="wa-reload" style="width:auto;padding:4px 10px;font-size:12px">Reload</button>
+        <button type="button" class="btn" id="wa-open" style="width:auto;padding:4px 10px;font-size:12px">Open ↗</button>
+      </div>
+      <iframe class="webapp-frame" id="wa-frame" allow="fullscreen; autoplay; clipboard-write; gamepad" allowfullscreen></iframe>
+      <div class="proxy-banner" id="wa-banner">If this page is blank, the site may block embedding. Use <b>Open ↗</b> or the Mount browser with proxy.</div>
+    </div>`;
+  const frame = root.querySelector("#wa-frame");
+  const banner = root.querySelector("#wa-banner");
+  const label = root.querySelector("span");
+  label.textContent = url;
+  function load(u) {
+    // Try direct first; many sites block iframes — still best UX for vscode.dev etc.
+    frame.src = u;
+    setTimeout(function () {
+      try {
+        // can't read cross-origin; show tip after delay if user might need it
+      } catch (e) {}
+    }, 2500);
+    // Show tip for known strict sites
+    if (/discord\.com|spotify\.com|geforcenow|youtube\.com/i.test(u)) {
+      banner.classList.add("show");
+    }
+  }
+  root.querySelector("#wa-reload").onclick = function () { load(url); };
+  root.querySelector("#wa-open").onclick = function () { window.open(url, "_blank", "noopener"); };
+  load(url);
+}
+
+/* ── Notifications (from notifications.json) ── */
+var __notifs = [];
+var __notifRead = {};
+try { __notifRead = JSON.parse(localStorage.getItem("mount_notif_read") || "{}") || {}; } catch (e) {}
+
+function saveNotifRead() {
+  try { localStorage.setItem("mount_notif_read", JSON.stringify(__notifRead)); } catch (e) {}
+}
+
+function notifUnreadCount() {
+  return __notifs.filter(function (n) {
+    var id = n.id || n.title;
+    if (__notifRead[id]) return false;
+    return n.read !== true;
+  }).length;
+}
+
+function renderNotifBadge() {
+  var badge = document.getElementById("tb-badge");
+  if (!badge) return;
+  var n = notifUnreadCount();
+  if (n > 0) {
+    badge.hidden = false;
+    badge.textContent = n > 99 ? "99+" : String(n);
+  } else {
+    badge.hidden = true;
+  }
+}
+
+function renderNotifList() {
+  var list = document.getElementById("notif-list");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!__notifs.length) {
+    list.innerHTML = '<div class="notif-empty">No notifications</div>';
+    return;
+  }
+  __notifs.forEach(function (n) {
+    var id = n.id || n.title;
+    var unread = !__notifRead[id] && n.read !== true;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "notif-item" + (unread ? " unread" : "");
+    b.innerHTML = '<div class="nf"></div><div class="nt"></div><div class="nb"></div><div class="nm"></div>';
+    b.querySelector(".nf").textContent = n.from || "System";
+    b.querySelector(".nt").textContent = n.title || "";
+    b.querySelector(".nb").textContent = n.body || "";
+    b.querySelector(".nm").textContent = n.time || "";
+    b.onclick = function () {
+      __notifRead[id] = true;
+      saveNotifRead();
+      renderNotifBadge();
+      renderNotifList();
+    };
+    list.appendChild(b);
+  });
+}
+
+function loadNotifications() {
+  fetch("notifications.json?t=" + Date.now())
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      __notifs = Array.isArray(data) ? data : (data.notifications || []);
+      renderNotifBadge();
+      renderNotifList();
+    })
+    .catch(function () {
+      __notifs = [];
+      renderNotifBadge();
+      renderNotifList();
+    });
+}
+
+function setupNotificationsUI() {
+  var bell = document.getElementById("tb-bell");
+  var panel = document.getElementById("notif-panel");
+  if (!bell || !panel) return;
+  if (bell.dataset.ready) { loadNotifications(); return; }
+  bell.dataset.ready = "1";
+  bell.onclick = function (e) {
+    e.stopPropagation();
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) renderNotifList();
+  };
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("#notif-panel") && !e.target.closest("#tb-bell")) {
+      panel.hidden = true;
+    }
+  });
+  var clearBtn = document.getElementById("notif-clear");
+  if (clearBtn) {
+    clearBtn.onclick = function () {
+      __notifs.forEach(function (n) { __notifRead[n.id || n.title] = true; });
+      saveNotifRead();
+      renderNotifBadge();
+      renderNotifList();
+    };
+  }
+  loadNotifications();
+  // refresh periodically so JSON edits show up
+  setInterval(loadNotifications, 15000);
+}
+
 
 // Background music — Aria Math (quiet), only on home desktop (no open apps)
 window.updateBgMusic = function updateBgMusic() {

@@ -13,7 +13,8 @@
     "https://twilight-cake-6f4c.weswoodland13.workers.dev/",
     "https://tomp.app/",
     "https://bare.benrogo.net/",
-    "https://uv.holyubofficial.net/"
+    "https://uv.holyubofficial.net/",
+    "https://bare.cosine.one/"
   ];
 
   try {

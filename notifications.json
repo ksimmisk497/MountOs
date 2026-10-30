@@ -1,0 +1,26 @@
+[
+  {
+    "id": "n1",
+    "from": "Mount OS",
+    "title": "Welcome",
+    "body": "Your desktop is ready. Edit notifications.json to add more.",
+    "time": "Just now",
+    "read": false
+  },
+  {
+    "id": "n2",
+    "from": "Games",
+    "title": "Library synced",
+    "body": "445 games are available in the Games app.",
+    "time": "2m ago",
+    "read": false
+  },
+  {
+    "id": "n3",
+    "from": "System",
+    "title": "Proxy tip",
+    "body": "If sites fail to load, set a custom bare server in localStorage key mount_bare.",
+    "time": "1h ago",
+    "read": true
+  }
+]
