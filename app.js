@@ -16,11 +16,30 @@ const APPS = [
   { id: "vscode", name: "VS Code", icon: "VSCODE", pinned: true, desktop: true, url: "https://vscode.dev/" },
   { id: "gfn", name: "GeForce Now", icon: "GFN", pinned: true, desktop: true, url: "https://play.geforcenow.com/" },
   { id: "youtube", name: "YouTube", icon: "YT", pinned: false, desktop: true, url: "https://www.youtube.com/" },
-  { id: "github", name: "GitHub", icon: "GITHUB", pinned: false, desktop: true, url: "https://github.com/" }
+  { id: "github", name: "GitHub", icon: "GITHUB", pinned: false, desktop: true, url: "https://github.com/" },
+  { id: "play", name: "Google Play", icon: "PLAY", pinned: false, desktop: true, url: "https://play.google.com/store/games" },
+  { id: "xboxcloud", name: "Xbox Cloud", icon: "XBOX", pinned: false, desktop: true, url: "https://www.xbox.com/play" }
 ];
+
+
+const APP_LOGOS = {
+  SPOTIFY: "app-icons/spotify.png",
+  DISCORD: "app-icons/discord.png",
+  VSCODE: "app-icons/vscode.png",
+  GFN: "app-icons/nvidia.png",
+  YT: "app-icons/youtube.png",
+  GITHUB: "app-icons/github.png",
+  PLAY: "app-icons/play.png",
+  XBOX: "app-icons/xbox.png"
+};
 
 function appIconHTML(icon, size) {
   size = size || 22;
+
+  if (APP_LOGOS[icon]) {
+    return `<div class="ico logo-ico"><img src="${APP_LOGOS[icon]}" alt=""></div>`;
+  }
+
   if (icon === "GEAR") return null; // handled with gearImg
   if (icon === "WEB") return `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
   if (icon === "GAME") return `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
@@ -507,6 +526,7 @@ function openApp(id) {
   win.style.zIndex = ++zTop;
 
   let wicon;
+  if (APP_LOGOS[app.icon]) wicon = `<div class="wicon" style="padding:0;overflow:hidden;border-radius:4px"><img src="${APP_LOGOS[app.icon]}" alt="" style="width:100%;height:100%;object-fit:cover"></div>`;
   if (app.icon === "GEAR") wicon = `<div class="wicon settings-wicon"><img src="${GEAR_URL}" alt=""></div>`;
   else if (app.icon === "WEB") wicon = `<div class="wicon" style="background:#2563eb;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg></div>`;
   else if (app.icon === "GAME") wicon = `<div class="wicon" style="background:#333;padding:2px"><img src="${GAMES_ICON}" alt="" style="width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1)"></div>`;
@@ -603,6 +623,7 @@ function focusWin(win) {
 
 function tbIconHTML(app) {
   if (!app) return "*";
+  if (APP_LOGOS[app.icon]) return `<img src="${APP_LOGOS[app.icon]}" alt="" style="width:20px;height:20px;border-radius:4px;object-fit:cover">`;
   if (app.icon === "GEAR") return `<span class="gear-ico"><img src="${GEAR_URL}" alt=""></span>`;
   if (app.icon === "WEB") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`;
   if (app.icon === "GAME") return `<img src="${GAMES_ICON}" alt="" style="width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)">`;
@@ -2282,34 +2303,36 @@ setupNotificationsUI();
 function renderWebApp(root, app) {
   const url = app.url || "about:blank";
   root.innerHTML = `
-    <div style="display:flex;flex-direction:column;height:100%;background:#111">
-      <div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:#1c1c1c;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0">
-        <span style="font-size:12px;color:#aaa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-        <button type="button" class="btn" id="wa-reload" style="width:auto;padding:4px 10px;font-size:12px">Reload</button>
-        <button type="button" class="btn" id="wa-open" style="width:auto;padding:4px 10px;font-size:12px">Open ↗</button>
+    <div class="native-app">
+      <div class="native-app-toolbar">
+        <div class="native-app-brand">
+          ${APP_LOGOS[app.icon] ? `<img src="${APP_LOGOS[app.icon]}" alt="">` : ""}
+          <span>${app.name}</span>
+        </div>
+        <div class="native-app-actions">
+          <button type="button" id="wa-reload" title="Reload">↻</button>
+          <button type="button" id="wa-popout" title="Open externally">↗</button>
+        </div>
       </div>
-      <iframe class="webapp-frame" id="wa-frame" allow="fullscreen; autoplay; clipboard-write; gamepad" allowfullscreen></iframe>
-      <div class="proxy-banner" id="wa-banner">If this page is blank, the site may block embedding. Use <b>Open ↗</b> or the Mount browser with proxy.</div>
+      <div class="native-app-body">
+        <div class="native-app-loading" id="wa-loading">Starting ${app.name}…</div>
+        <iframe class="webapp-frame" id="wa-frame" allow="fullscreen; autoplay; clipboard-write; gamepad; microphone; camera" allowfullscreen></iframe>
+      </div>
+      <div class="proxy-banner" id="wa-banner">This app blocked embedded mode. Click ↗ to open it as a standalone window.</div>
     </div>`;
   const frame = root.querySelector("#wa-frame");
   const banner = root.querySelector("#wa-banner");
-  const label = root.querySelector("span");
-  label.textContent = url;
+  const loading = root.querySelector("#wa-loading");
   function load(u) {
-    // Try direct first; many sites block iframes — still best UX for vscode.dev etc.
+    loading.style.display = "grid";
+    frame.onload = function () { loading.style.display = "none"; };
     frame.src = u;
-    setTimeout(function () {
-      try {
-        // can't read cross-origin; show tip after delay if user might need it
-      } catch (e) {}
-    }, 2500);
-    // Show tip for known strict sites
     if (/discord\.com|spotify\.com|geforcenow|youtube\.com/i.test(u)) {
-      banner.classList.add("show");
+      setTimeout(function () { banner.classList.add("show"); }, 3000);
     }
   }
   root.querySelector("#wa-reload").onclick = function () { load(url); };
-  root.querySelector("#wa-open").onclick = function () { window.open(url, "_blank", "noopener"); };
+  root.querySelector("#wa-popout").onclick = function () { window.open(url, "_blank", "noopener"); };
   load(url);
 }
 

@@ -232,8 +232,14 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
   z-index: 1000;
 }
 #taskbar-center {
-  display: flex; align-items: center; gap: 4px;
-  padding: 0 6px; height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  height: 40px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 .tb {
   width: 40px; height: 40px; border: 0; border-radius: 4px;
@@ -263,8 +269,20 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
   filter: brightness(0) invert(1);
 }
 #taskbar-right {
-  position: absolute; right: 0; top: 0; bottom: 0;
-  display: flex; align-items: center; padding-right: 4px; gap: 2px;
+  position: absolute !important;
+  right: 0 !important;
+  top: 0;
+  bottom: 0;
+  left: auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: row;
+  padding: 0 10px 0 8px;
+  gap: 4px;
+  z-index: 20;
+  margin: 0;
+  transform: none !important;
 }
 #tb-clock {
   padding: 4px 10px; border-radius: 4px; text-align: right;
@@ -1058,7 +1076,6 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
 
 
 /* ── Notifications ── */
-#taskbar-right { position: relative; }
 .tb-bell {
   position: relative; width: 40px; height: 40px; border: 0; border-radius: 4px;
   background: transparent; color: #eee; display: grid; place-items: center; cursor: pointer;
@@ -1071,11 +1088,19 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
 }
 .tb-badge[hidden] { display: none !important; }
 .notif-panel {
-  position: absolute; right: 8px; bottom: calc(100% + 10px);
-  width: min(340px, calc(100vw - 24px)); max-height: 420px;
-  background: rgba(32,32,32,0.96); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.55);
-  display: flex; flex-direction: column; overflow: hidden; z-index: 2000;
+  position: absolute;
+  right: 8px;
+  bottom: calc(100% + 10px);
+  width: min(340px, calc(100vw - 24px));
+  max-height: 420px;
+  background: rgba(32,32,32,0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 2000;
   animation: notif-in .2s ease;
 }
 .notif-panel[hidden] { display: none !important; }
@@ -1142,3 +1167,35 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
   display: none;
 }
 .proxy-banner.show { display: block; animation: notif-in .2s ease; }
+
+.desk-icon .ico.logo-ico, .start-app .ico.logo-ico {
+  background: transparent !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.desk-icon .ico.logo-ico img, .start-app .ico.logo-ico img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.native-app { display: flex; flex-direction: column; height: 100%; background: #0f0f0f; }
+.native-app-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: #1a1a1a; border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0; -webkit-app-region: drag;
+}
+.native-app-brand { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #ddd; }
+.native-app-brand img { width: 18px; height: 18px; border-radius: 4px; object-fit: cover; }
+.native-app-actions { display: flex; gap: 4px; }
+.native-app-actions button {
+  width: 28px; height: 28px; border: 0; border-radius: 6px;
+  background: rgba(255,255,255,0.06); color: #ccc; cursor: pointer; font-size: 14px;
+}
+.native-app-actions button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.native-app-body { flex: 1; position: relative; min-height: 0; }
+.native-app-loading {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: #0f0f0f; color: #888; font-size: 13px; z-index: 1;
+}
+.notif-panel {
+  right: 8px;
+}
