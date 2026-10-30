@@ -10,35 +10,14 @@ const APPS = [
   { id: "files", name: "File Explorer", icon: "FILES", pinned: true, desktop: false },
   { id: "notes", name: "Notes", icon: "NOTES", pinned: true, desktop: false },
   { id: "calc", name: "Calculator", icon: "CALC", pinned: true, desktop: false },
-  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false },
-  { id: "spotify", name: "Spotify", icon: "SPOTIFY", pinned: true, desktop: true, url: "https://open.spotify.com/" },
-  { id: "discord", name: "Discord", icon: "DISCORD", pinned: true, desktop: true, url: "https://discord.com/app" },
-  { id: "vscode", name: "VS Code", icon: "VSCODE", pinned: true, desktop: true, url: "https://vscode.dev/" },
-  { id: "gfn", name: "GeForce Now", icon: "GFN", pinned: true, desktop: true, url: "https://play.geforcenow.com/" },
-  { id: "youtube", name: "YouTube", icon: "YT", pinned: false, desktop: true, url: "https://www.youtube.com/" },
-  { id: "github", name: "GitHub", icon: "GITHUB", pinned: false, desktop: true, url: "https://github.com/" },
-  { id: "play", name: "Google Play", icon: "PLAY", pinned: false, desktop: true, url: "https://play.google.com/store/games" },
-  { id: "xboxcloud", name: "Xbox Cloud", icon: "XBOX", pinned: false, desktop: true, url: "https://www.xbox.com/play" }
+  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false }
 ];
 
 
-const APP_LOGOS = {
-  SPOTIFY: "app-icons/spotify.png",
-  DISCORD: "app-icons/discord.png",
-  VSCODE: "app-icons/vscode.png",
-  GFN: "app-icons/nvidia.png",
-  YT: "app-icons/youtube.png",
-  GITHUB: "app-icons/github.png",
-  PLAY: "app-icons/play.png",
-  XBOX: "app-icons/xbox.png"
-};
 
 function appIconHTML(icon, size) {
   size = size || 22;
 
-  if (APP_LOGOS[icon]) {
-    return `<div class="ico logo-ico"><img src="${APP_LOGOS[icon]}" alt=""></div>`;
-  }
 
   if (icon === "GEAR") return null; // handled with gearImg
   if (icon === "WEB") return `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
@@ -521,13 +500,13 @@ function openApp(id) {
   win.className = "window";
   win.dataset.id = id;
   const w = Math.min(
-    id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" || app.url ? 1020 :
+    id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" ? 1020 :
     id === "browser" ? 1000 :
     id === "calc" ? 320 : id === "terminal" ? 900 : 520,
     innerWidth - 16
   );
   const h = Math.min(
-    id === "settings" || id === "ai" || id === "files" || id === "notes" || app.url ? 640 :
+    id === "settings" || id === "ai" || id === "files" || id === "notes" ? 640 :
     id === "games" ? Math.min(innerHeight - 80, 820) :
     id === "browser" ? 640 :
     id === "calc" ? 440 : id === "terminal" ? 560 : 380,
@@ -540,7 +519,6 @@ function openApp(id) {
   win.style.zIndex = ++zTop;
 
   let wicon;
-  if (APP_LOGOS[app.icon]) wicon = `<div class="wicon" style="padding:0;overflow:hidden;border-radius:4px"><img src="${APP_LOGOS[app.icon]}" alt="" style="width:100%;height:100%;object-fit:cover"></div>`;
   if (app.icon === "GEAR") wicon = `<div class="wicon settings-wicon"><img src="${GEAR_URL}" alt=""></div>`;
   else if (app.icon === "WEB") wicon = `<div class="wicon" style="background:#2563eb;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg></div>`;
   else if (app.icon === "GAME") wicon = `<div class="wicon" style="background:#333;padding:2px"><img src="${GAMES_ICON}" alt="" style="width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1)"></div>`;
@@ -579,7 +557,6 @@ function openApp(id) {
   else if (id === "notes") renderNotes(body);
   else if (id === "calc") renderCalc(body);
   else if (id === "terminal") renderTerminal(body);
-  else if (app.url) renderWebApp(body, app);
   else body.innerHTML = `<div style="padding:16px">${app.name}</div>`;
 
   document.getElementById("windows").appendChild(win);
@@ -637,7 +614,6 @@ function focusWin(win) {
 
 function tbIconHTML(app) {
   if (!app) return "*";
-  if (APP_LOGOS[app.icon]) return `<img src="${APP_LOGOS[app.icon]}" alt="" style="width:20px;height:20px;border-radius:4px;object-fit:cover">`;
   if (app.icon === "GEAR") return `<span class="gear-ico"><img src="${GEAR_URL}" alt=""></span>`;
   if (app.icon === "WEB") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`;
   if (app.icon === "GAME") return `<img src="${GAMES_ICON}" alt="" style="width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)">`;
@@ -2325,78 +2301,6 @@ showScreen("lock");
 startAnimatedWallpaper();
 setupNotificationsUI();
 
-
-function renderWebApp(root, app) {
-  const url = app.url || "about:blank";
-  root.innerHTML = `
-    <div class="native-app">
-      <div class="native-app-toolbar">
-        <div class="native-app-brand">
-          ${APP_LOGOS[app.icon] ? `<img src="${APP_LOGOS[app.icon]}" alt="">` : ""}
-          <span>${app.name}</span>
-        </div>
-        <div class="native-app-actions">
-          <button type="button" id="wa-reload" title="Reload">↻</button>
-          <button type="button" id="wa-direct" title="Try direct">Direct</button>
-          <button type="button" id="wa-popout" title="Open in new tab">↗</button>
-        </div>
-      </div>
-      <div class="native-app-body">
-        <div class="native-app-loading" id="wa-loading">Starting ${app.name}…</div>
-        <iframe class="webapp-frame" id="wa-frame" allow="fullscreen; autoplay; clipboard-write; gamepad; microphone; camera" allowfullscreen referrerpolicy="no-referrer"></iframe>
-      </div>
-      <div class="proxy-banner" id="wa-banner">If it still won't load, click <b>↗</b> to open in a new tab (some apps block all embedding).</div>
-    </div>`;
-  const frame = root.querySelector("#wa-frame");
-  const banner = root.querySelector("#wa-banner");
-  const loading = root.querySelector("#wa-loading");
-  let mode = "proxy"; // proxy | direct
-
-  function hideLoadingSoon() {
-    setTimeout(function () { loading.style.display = "none"; }, 1200);
-  }
-
-  function load() {
-    loading.style.display = "grid";
-    loading.textContent = mode === "proxy" ? ("Connecting " + app.name + " via proxy…") : ("Loading " + app.name + "…");
-    frame.onload = function () { loading.style.display = "none"; };
-    frame.onerror = function () {
-      loading.style.display = "none";
-      banner.classList.add("show");
-    };
-    if (mode === "proxy" && typeof canUseProxy === "function" && canUseProxy()) {
-      ensureProxySW().then(function () {
-        try {
-          frame.src = toProxyUrl(url);
-        } catch (e) {
-          mode = "direct";
-          frame.src = url;
-        }
-        hideLoadingSoon();
-      }).catch(function () {
-        mode = "direct";
-        frame.src = url;
-        hideLoadingSoon();
-      });
-    } else {
-      frame.src = url;
-      hideLoadingSoon();
-      // direct embeds often blocked
-      setTimeout(function () { banner.classList.add("show"); }, 2500);
-    }
-  }
-
-  root.querySelector("#wa-reload").onclick = function () { load(); };
-  root.querySelector("#wa-direct").onclick = function () {
-    mode = mode === "proxy" ? "direct" : "proxy";
-    root.querySelector("#wa-direct").textContent = mode === "proxy" ? "Direct" : "Proxy";
-    load();
-  };
-  root.querySelector("#wa-popout").onclick = function () {
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-  load();
-}
 
 /* ── Notifications (from notifications.json) ── */
 var __notifs = [];
