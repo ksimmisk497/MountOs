@@ -146,19 +146,158 @@ function showScreen(id) {
   document.getElementById(id).classList.add("active");
 }
 function applyWallpaper() {
-  var src = WALLPAPER_URL;
+  var wp = document.getElementById("wallpaper");
+  var photo = document.getElementById("wp-photo");
+  var src = null;
   try {
-    if (state && state.settings && state.settings.wallpaper && state.settings.wallpaper !== "default") {
+    if (state && state.settings && state.settings.wallpaper && state.settings.wallpaper !== "default" && state.settings.wallpaper !== "animated") {
       src = state.settings.wallpaper;
     }
   } catch (e) {}
-  // data URLs or paths
-  if (/^data:|^https?:|^blob:|\.jpg|\.png|\.webp|\.gif/i.test(src) || src.indexOf("/") >= 0) {
-    document.documentElement.style.setProperty("--wp-image", "url(\"" + src.replace(/"/g, '\\"') + "\")");
+  if (src) {
+    document.documentElement.style.setProperty("--wp-image", "url(\"" + String(src).replace(/"/g, '\\"') + "\")");
+    if (wp) wp.classList.add("photo-mode");
   } else {
-    document.documentElement.style.setProperty("--wp-image", "url(" + WALLPAPER_URL + ")");
+    // animated canvas wallpaper (default)
+    document.documentElement.style.setProperty("--wp-image", "none");
+    if (wp) wp.classList.remove("photo-mode");
+    startAnimatedWallpaper();
   }
 }
+
+var __wpAnim = null;
+function startAnimatedWallpaper() {
+  var canvas = document.getElementById("wp-canvas");
+  if (!canvas) return;
+  if (__wpAnim) return; // already running
+  var ctx = canvas.getContext("2d");
+  var stars = [];
+  var w = 0, h = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth || window.innerWidth;
+    h = canvas.clientHeight || (window.innerHeight - 48);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    stars = [];
+    var count = Math.floor((w * h) / 4500);
+    for (var i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * w,
+        y: Math.random() * h * 0.72,
+        r: Math.random() * 1.4 + 0.3,
+        a: Math.random(),
+        s: Math.random() * 0.02 + 0.005
+      });
+    }
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  function mountainPath(baseY, peakX, peakY, spread) {
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(0, baseY);
+    ctx.lineTo(peakX - spread * 0.55, baseY - (baseY - peakY) * 0.25);
+    ctx.lineTo(peakX, peakY);
+    ctx.lineTo(peakX + spread * 0.5, baseY - (baseY - peakY) * 0.2);
+    ctx.lineTo(w, baseY + 20);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+  }
+
+  function frame(t) {
+    t = t * 0.001;
+    // sky gradient
+    var g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, "#05051a");
+    g.addColorStop(0.45, "#0a0a28");
+    g.addColorStop(0.75, "#12122a");
+    g.addColorStop(1, "#0a0a14");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // aurora bands
+    for (var b = 0; b < 3; b++) {
+      var phase = t * (0.15 + b * 0.05) + b * 1.7;
+      var ag = ctx.createLinearGradient(0, h * 0.05, w, h * 0.55);
+      var alpha = 0.08 + 0.05 * Math.sin(phase);
+      if (b === 0) ag.addColorStop(0, "rgba(120,40,255," + (alpha) + ")");
+      else if (b === 1) ag.addColorStop(0, "rgba(40,180,255," + (alpha * 0.9) + ")");
+      else ag.addColorStop(0, "rgba(180,60,255," + (alpha * 0.7) + ")");
+      ag.addColorStop(0.35 + 0.1 * Math.sin(phase * 1.3), "rgba(80,200,255," + (alpha * 1.2) + ")");
+      ag.addColorStop(0.7, "rgba(120,40,255," + (alpha * 0.5) + ")");
+      ag.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = ag;
+      ctx.beginPath();
+      var y0 = h * (0.12 + b * 0.06);
+      ctx.moveTo(0, y0);
+      for (var x = 0; x <= w; x += 16) {
+        var yy = y0
+          + Math.sin(x * 0.008 + phase) * (28 + b * 10)
+          + Math.sin(x * 0.02 - phase * 1.4) * 12;
+        ctx.lineTo(x, yy);
+      }
+      ctx.lineTo(w, h * 0.65);
+      ctx.lineTo(0, h * 0.65);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // stars twinkle
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      s.a += s.s;
+      var tw = 0.35 + 0.65 * Math.abs(Math.sin(s.a));
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(255,255,255," + tw + ")";
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // far mountains
+    ctx.fillStyle = "#0d1020";
+    mountainPath(h * 0.62, w * 0.22, h * 0.42, w * 0.5);
+    ctx.fill();
+    ctx.fillStyle = "#0a0d18";
+    mountainPath(h * 0.68, w * 0.78, h * 0.4, w * 0.55);
+    ctx.fill();
+
+    // main peak
+    var peakX = w * 0.5;
+    var peakY = h * 0.28;
+    var baseY = h * 0.72;
+    var mg = ctx.createLinearGradient(peakX, peakY, peakX, h);
+    mg.addColorStop(0, "#0c1228");
+    mg.addColorStop(0.45, "#080c1c");
+    mg.addColorStop(1, "#04060f");
+    ctx.fillStyle = mg;
+    mountainPath(baseY, peakX, peakY, w * 0.7);
+    ctx.fill();
+
+    // soft ridge highlight (no solid triangle)
+    ctx.strokeStyle = "rgba(140,170,255,0.15)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(peakX - w * 0.12, peakY + h * 0.12);
+    ctx.lineTo(peakX, peakY);
+    ctx.lineTo(peakX + w * 0.11, peakY + h * 0.11);
+    ctx.stroke();
+
+    // fog near base
+    var fog = ctx.createLinearGradient(0, h * 0.55, 0, h);
+    fog.addColorStop(0, "rgba(10,12,30,0)");
+    fog.addColorStop(0.4, "rgba(12,14,28,0.35)");
+    fog.addColorStop(1, "rgba(5,6,16,0.85)");
+    ctx.fillStyle = fog;
+    ctx.fillRect(0, h * 0.5, w, h * 0.5);
+
+    __wpAnim = requestAnimationFrame(frame);
+  }
+  __wpAnim = requestAnimationFrame(frame);
+}
+
 
 function renderUserList() {
   const list = document.getElementById("user-list");
@@ -228,6 +367,11 @@ function enterSession() {
   renderPinned();
   renderTaskbar();
   showScreen("session");
+  var lock = document.getElementById("lock");
+  if (lock) {
+    lock.classList.remove("unlocked", "active");
+    lock.style.display = "none";
+  }
   closeStart();
   if (window.updateBgMusic) window.updateBgMusic();
 }
@@ -2110,6 +2254,7 @@ renderUserList();
 state.sessionUserId = null;
 save();
 showScreen("lock");
+startAnimatedWallpaper();
 
 // Background music — Aria Math (quiet), only on home desktop (no open apps)
 window.updateBgMusic = function updateBgMusic() {
