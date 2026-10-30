@@ -112,14 +112,23 @@ function save() {
 /* UV proxy helpers */
 function ensureProxySW() {
   if (window.__mountSWPromise) return window.__mountSWPromise;
+  if (location.protocol === "file:" || location.origin === "null") {
+    window.__mountSWReady = false;
+    window.__mountSWPromise = Promise.resolve();
+    return window.__mountSWPromise;
+  }
   if (typeof registerSW === "function") {
-    window.__mountSWPromise = registerSW().catch(function () {}).then(function () {
+    window.__mountSWPromise = registerSW().then(function () {
       window.__mountSWReady = true;
+    }).catch(function (err) {
+      console.warn("SW register failed", err);
+      window.__mountSWReady = false;
     });
     return window.__mountSWPromise;
   }
-  window.__mountSWReady = true;
-  return Promise.resolve();
+  window.__mountSWReady = false;
+  window.__mountSWPromise = Promise.resolve();
+  return window.__mountSWPromise;
 }
 function toProxyUrl(raw) {
   var url = raw;
@@ -132,10 +141,15 @@ function toProxyUrl(raw) {
       else url = "https://duckduckgo.com/?q=" + encodeURIComponent(url);
     }
   }
-  if (typeof __uv$config !== "undefined" && __uv$config.encodeUrl && __uv$config.prefix) {
-    return __uv$config.prefix + __uv$config.encodeUrl(url);
-  }
+  try {
+    if (typeof __uv$config !== "undefined" && __uv$config.encodeUrl && __uv$config.prefix) {
+      return __uv$config.prefix + __uv$config.encodeUrl(url);
+    }
+  } catch (e) {}
   return url;
+}
+function canUseProxy() {
+  return !!(typeof __uv$config !== "undefined" && __uv$config.encodeUrl && __uv$config.prefix && location.protocol !== "file:");
 }
 
 let state = load();
@@ -790,20 +804,21 @@ function renderBrowser(root) {
       t.title = new URL(url).hostname.replace(/^www\./, "") || "Tab";
     } catch (e) { t.title = "Tab"; }
     urlInput.value = url;
-    var proxied = toProxyUrl(url);
     renderTabs();
     updateNav();
-    if (window.__mountSWReady) {
-      showFrame(proxied);
-    } else {
-      var done = false;
-      var swTimer = setTimeout(function () {
-        if (!done) { done = true; showFrame(proxied); }
-      }, 150);
-      ensureProxySW().then(function () {
-        if (!done) { done = true; clearTimeout(swTimer); showFrame(proxied); }
-      });
+    function go(src) { showFrame(src); }
+    if (!canUseProxy()) {
+      go(url);
+      return;
     }
+    var proxied = toProxyUrl(url);
+    var done = false;
+    var swTimer = setTimeout(function () {
+      if (!done) { done = true; go(proxied); }
+    }, 400);
+    ensureProxySW().then(function () {
+      if (!done) { done = true; clearTimeout(swTimer); go(proxied); }
+    });
   }
 
   function updateNav() {
@@ -941,10 +956,21 @@ function renderGames(root) {
     playingTitle.textContent = g.name;
     library.hidden = true;
     player.hidden = false;
-    // Direct load for instant start (class6x is static). Proxy is still used by the browser app.
     frame.onload = null;
     frame.onerror = null;
-    frame.src = g.url;
+    var target = g.url || "";
+    var isLocalish = /class6x|gitlab\.io|localhost|127\.0\.0\.1/i.test(target);
+    function useDirect() { frame.src = target; }
+    function useProxy() {
+      if (!canUseProxy()) { useDirect(); return; }
+      ensureProxySW().then(function () {
+        try { frame.src = toProxyUrl(target); }
+        catch (e) { useDirect(); }
+      });
+    }
+    // Static class6x games: direct (fast). Other hosts: proxy when available.
+    if (isLocalish) useDirect();
+    else useProxy();
   }
 
   function exitGame() {

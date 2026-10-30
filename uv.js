@@ -24,10 +24,8 @@ async function pickBestBare() {
   _barePicked = true;
 
   var list = (self.__uv$config && self.__uv$config.bareServers) || [
-    "https://twilight-cake-6f4c.weswoodland13.workers.dev/",
     "https://tomp.app/",
-    "https://bare.benrogo.net/",
-    "https://uv.holyubofficial.net/"
+    "https://twilight-cake-6f4c.weswoodland13.workers.dev/"
   ];
   if (!Array.isArray(list)) list = [list];
 
