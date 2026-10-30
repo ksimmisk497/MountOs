@@ -336,14 +336,14 @@ function openApp(id) {
   const w = Math.min(
     id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" ? 1020 :
     id === "browser" ? 1000 :
-    id === "calc" ? 320 : id === "terminal" ? 720 : 520,
+    id === "calc" ? 320 : id === "terminal" ? 900 : 520,
     innerWidth - 16
   );
   const h = Math.min(
     id === "settings" || id === "ai" || id === "files" || id === "notes" ? 640 :
     id === "games" ? Math.min(innerHeight - 80, 820) :
     id === "browser" ? 640 :
-    id === "calc" ? 440 : id === "terminal" ? 480 : 380,
+    id === "calc" ? 440 : id === "terminal" ? 560 : 380,
     innerHeight - 64
   );
   win.style.width = w + "px";
@@ -1589,133 +1589,412 @@ function renderMountFlix(root) {
 }
 
 
+
 function renderTerminal(root) {
   const u = currentUser();
   const userName = (u && u.name) ? u.name : "guest";
+  const host = "MOUNT-PC";
+  let cwdParts = ["C:", "Users", userName];
+  let hist = [];
+  let histIdx = -1;
+  let tabs = [{ id: 1, title: "Command Prompt" }];
+  let activeTab = 1;
+  let nextTab = 2;
+  const env = {
+    USERNAME: userName,
+    USERPROFILE: "C:\\\\Users\\\\" + userName,
+    SYSTEMROOT: "C:\\\\Windows",
+    PATH: "C:\\\\Windows\\\\System32;C:\\\\Windows",
+    PROMPT: "$P$G"
+  };
+
   root.innerHTML = `
-    <div class="term-app">
-      <div class="term-out" id="term-out"></div>
-      <div class="term-input-row">
-        <span class="term-prompt" id="term-prompt"></span>
-        <input class="term-input" id="term-input" type="text" spellcheck="false" autocomplete="off" />
+    <div class="wt-app">
+      <div class="wt-tabbar">
+        <div class="wt-tabs" id="wt-tabs"></div>
+        <button type="button" class="wt-newtab" id="wt-newtab" title="New tab">+</button>
+        <div class="wt-tabbar-space"></div>
+      </div>
+      <div class="wt-body">
+        <div class="wt-out" id="wt-out"></div>
+        <div class="wt-input-row">
+          <span class="wt-prompt" id="wt-prompt"></span>
+          <input class="wt-input" id="wt-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" />
+        </div>
       </div>
     </div>`;
-  const out = root.querySelector("#term-out");
-  const input = root.querySelector("#term-input");
-  const promptEl = root.querySelector("#term-prompt");
-  let cwd = "~";
-  const history = [];
-  let histIdx = -1;
 
-  function setPrompt() {
-    promptEl.textContent = userName + "@mount:" + cwd + "$";
+  const out = root.querySelector("#wt-out");
+  const input = root.querySelector("#wt-input");
+  const promptEl = root.querySelector("#wt-prompt");
+  const tabsEl = root.querySelector("#wt-tabs");
+
+  function cwdStr() {
+    if (cwdParts.length === 1) return cwdParts[0] + "\\\\";
+    return cwdParts.join("\\\\");
   }
-  function line(html, cls) {
+  function setPrompt() {
+    promptEl.textContent = cwdStr() + ">";
+  }
+  function paintTabs() {
+    tabsEl.innerHTML = "";
+    tabs.forEach(t => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "wt-tab" + (t.id === activeTab ? " active" : "");
+      b.innerHTML = `<span class="wt-tab-icon">▶</span><span class="wt-tab-title"></span><span class="wt-tab-x" data-close="${t.id}">×</span>`;
+      b.querySelector(".wt-tab-title").textContent = t.title;
+      b.onclick = (e) => {
+        if (e.target.getAttribute("data-close")) return;
+        activeTab = t.id;
+        paintTabs();
+        input.focus();
+      };
+      b.querySelector(".wt-tab-x").onclick = (e) => {
+        e.stopPropagation();
+        if (tabs.length === 1) return;
+        tabs = tabs.filter(x => x.id !== t.id);
+        if (activeTab === t.id) activeTab = tabs[tabs.length - 1].id;
+        paintTabs();
+      };
+      tabsEl.appendChild(b);
+    });
+  }
+  function write(text, cls) {
     const d = document.createElement("div");
-    d.className = "term-line" + (cls ? " " + cls : "");
+    d.className = "wt-line" + (cls ? " " + cls : "");
+    d.textContent = text;
+    out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+  }
+  function writeHTML(html, cls) {
+    const d = document.createElement("div");
+    d.className = "wt-line" + (cls ? " " + cls : "");
     d.innerHTML = html;
     out.appendChild(d);
     out.scrollTop = out.scrollHeight;
   }
-  function textLine(str, cls) {
-    const d = document.createElement("div");
-    d.className = "term-line" + (cls ? " " + cls : "");
-    d.textContent = str;
-    out.appendChild(d);
-    out.scrollTop = out.scrollHeight;
+  function banner() {
+    write("Microsoft Windows [Version 10.0.22631.2861]");
+    write("(c) Microsoft Corporation. All rights reserved.");
+    write("");
+  }
+
+  // virtual fs snapshot for dir/cd
+  function fsTree() {
+    try {
+      const fs = ensureFS();
+      return fs;
+    } catch (e) {
+      return { children: [] };
+    }
+  }
+  function listNames() {
+    const names = ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Videos", "AppData", "Favorites"];
+    try {
+      const fs = fsTree();
+      if (fs && fs.children) return fs.children.map(c => c.name);
+    } catch (e) {}
+    return names;
   }
 
   function neofetch() {
     const games = (typeof GAMES_EMBEDDED !== "undefined" && GAMES_EMBEDDED) ? GAMES_EMBEDDED.length : "?";
-    const art = [
-      "        /\\",
-      "       /  \\      " + userName + "@mount-os",
-      "      /_/\\_\\     -----------",
-      "     /      \\    OS: Mount OS",
-      "    /   /\\   \\   Host: Browser",
-      "   /   /  \\   \\  Kernel: WebKit/Blink",
-      "  /___/    \\___\\ Shell: mount-sh",
-      "                 Font: Minecraft",
-      "                 Games: " + games,
-      "                 Theme: Dark",
-      "                 CPU: Your brain",
-      "                 Memory: localStorage"
+    const lines = [
+      "        /\\\\          " + userName + "@" + host,
+      "       /  \\\\         ---------------",
+      "      /_/\\\\_\\\\        OS: Mount OS (Windows Terminal)",
+      "     /      \\\\       Host: " + host,
+      "    /   /\\\\   \\\\      Kernel: Browser",
+      "   /   /  \\\\   \\\\     Shell: cmd.exe",
+      "  /___/    \\\\___\\\\    Font: Minecraft",
+      "                    Resolution: " + window.innerWidth + "x" + window.innerHeight,
+      "                    Games: " + games,
+      "                    Terminal: Windows Terminal",
+      "                    CPU: Virtual",
+      "                    Memory: localStorage"
     ];
-    art.forEach(function (l) { textLine(l, "term-ok"); });
+    lines.forEach(l => write(l, "wt-accent"));
   }
 
-  const HELP = "Commands: help, clear, neofetch, whoami, date, echo, ls, pwd, cd, games, open, fortune, uname, about";
+  const HELP = [
+    "For more information on a specific command, type HELP command-name",
+    "ASSOC          Displays or modifies file extension associations.",
+    "CD             Displays the name of or changes the current directory.",
+    "CHDIR          Displays the name of or changes the current directory.",
+    "CLS            Clears the screen.",
+    "COLOR          Sets the default console foreground and background colors.",
+    "COPY           Copies one or more files to another location.",
+    "DATE           Displays or sets the date.",
+    "DEL            Deletes one or more files.",
+    "DIR            Displays a list of files and subdirectories in a directory.",
+    "ECHO           Displays messages, or turns command echoing on or off.",
+    "EXIT           Quits the CMD.EXE program (command interpreter).",
+    "FIND           Searches for a text string in a file or files.",
+    "HELP           Provides Help information for Windows commands.",
+    "MKDIR          Creates a directory.",
+    "MD             Creates a directory.",
+    "MOVE           Moves one or more files from one directory to another.",
+    "PATH           Displays or sets a search path for executable files.",
+    "PROMPT         Changes the cmd.exe command prompt.",
+    "RD             Removes a directory.",
+    "RMDIR          Removes a directory.",
+    "REN            Renames a file or files.",
+    "RENAME         Renames a file or files.",
+    "SET            Displays, sets, or removes Windows environment variables.",
+    "START          Starts a separate window to run a specified program or command.",
+    "SYSTEMINFO     Displays machine specific properties and configuration.",
+    "TIME           Displays or sets the system time.",
+    "TITLE          Sets the window title for the command prompt window.",
+    "TREE           Graphically displays the directory structure.",
+    "TYPE           Displays the contents of a text file.",
+    "VER            Displays the Windows version.",
+    "VOL            Displays a disk volume label and serial number.",
+    "WHOAMI         Displays user name.",
+    "HOSTNAME       Displays host name.",
+    "IPCONFIG       Displays network configuration.",
+    "PING           Ping a host (simulated).",
+    "TASKLIST       Lists running tasks.",
+    "NEOFETCH       System information with logo.",
+    "CLEAR          Clears the screen (alias of CLS).",
+    "OPEN           Opens a Mount OS app (files, notes, calc, games…)."
+  ];
 
-  function run(cmd) {
-    const raw = cmd.trim();
-    if (!raw) return;
-    line('<span class="term-cmd">' + promptEl.textContent + " " + raw.replace(/</g,"&lt;") + "</span>");
-    history.push(raw);
-    histIdx = history.length;
-    const parts = raw.split(/\s+/);
-    const c = parts[0].toLowerCase();
+  function run(raw) {
+    const line = raw.replace(/^\s+|\s+$/g, "");
+    if (!line) {
+      write(cwdStr() + ">");
+      return;
+    }
+    write(cwdStr() + ">" + line);
+    hist.push(line);
+    histIdx = hist.length;
+
+    // split respecting simple quotes
+    const parts = [];
+    let cur = "", q = null;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (q) {
+        if (ch === q) q = null;
+        else cur += ch;
+      } else if (ch === '"' || ch === "'") {
+        q = ch;
+      } else if (/\s/.test(ch)) {
+        if (cur) { parts.push(cur); cur = ""; }
+      } else cur += ch;
+    }
+    if (cur) parts.push(cur);
+
+    const cmd = (parts[0] || "").toLowerCase();
     const args = parts.slice(1);
 
-    if (c === "help" || c === "?") textLine(HELP, "term-info");
-    else if (c === "clear" || c === "cls") out.innerHTML = "";
-    else if (c === "neofetch" || c === "fetch") neofetch();
-    else if (c === "whoami") textLine(userName);
-    else if (c === "date") textLine(new Date().toString());
-    else if (c === "pwd") textLine(cwd === "~" ? "/home/" + userName : cwd);
-    else if (c === "uname") textLine("MountOS browser-x86_64");
-    else if (c === "about") textLine("Mount OS — a desktop in your browser. Built for games, files, and fun.", "term-info");
-    else if (c === "echo") textLine(args.join(" "));
-    else if (c === "ls") {
-      if (cwd === "~" || cwd === "/home/" + userName) textLine("Desktop  Documents  Downloads  Music  Pictures  Videos");
-      else textLine(".");
+    if (cmd === "help" || cmd === "/?") {
+      if (args[0]) {
+        write("Help for " + args[0].toUpperCase() + " is not available in this demo shell.");
+        write("Type HELP for a list of commands.");
+      } else HELP.forEach(l => write(l));
     }
-    else if (c === "cd") {
-      const t = args[0] || "~";
-      if (t === "~" || t === "/" || t === "/home/" + userName) cwd = "~";
-      else if (t === ".." ) cwd = "~";
-      else cwd = t.replace(/^\//, "");
-      setPrompt();
+    else if (cmd === "cls" || cmd === "clear") { out.innerHTML = ""; }
+    else if (cmd === "ver") {
+      write("Microsoft Windows [Version 10.0.22631.2861]");
     }
-    else if (c === "games") {
-      textLine("Opening Games…", "term-ok");
-      try { openApp("games"); } catch (e) {}
+    else if (cmd === "whoami") write(host + "\\\\" + userName);
+    else if (cmd === "hostname") write(host);
+    else if (cmd === "date") write("The current date is: " + new Date().toLocaleDateString());
+    else if (cmd === "time") write("The current time is: " + new Date().toLocaleTimeString());
+    else if (cmd === "echo") {
+      if (!args.length) write("ECHO is on.");
+      else write(args.join(" "));
     }
-    else if (c === "open") {
+    else if (cmd === "cd" || cmd === "chdir") {
+      if (!args.length) write(cwdStr());
+      else {
+        let t = args.join(" ");
+        if (t === "/" || t === "\\\\") cwdParts = ["C:"];
+        else if (t === "~") cwdParts = ["C:", "Users", userName];
+        else if (t === ".." ) { if (cwdParts.length > 1) cwdParts.pop(); }
+        else if (/^[a-zA-Z]:\\?$/.test(t)) cwdParts = [t.replace(/\\\\$/, "").toUpperCase()];
+        else if (t.startsWith("C:\\\\") || t.startsWith("c:\\\\")) cwdParts = t.split(/\\\\+/).filter(Boolean);
+        else cwdParts = cwdParts.concat(t.split(/\\\\+/).filter(Boolean));
+        setPrompt();
+      }
+    }
+    else if (cmd === "dir") {
+      write(" Volume in drive C has no label.");
+      write(" Volume Serial Number is 1A2B-3C4D");
+      write("");
+      write(" Directory of " + cwdStr());
+      write("");
+      const now = new Date();
+      const ds = now.toLocaleDateString() + "  " + now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      write(ds + "    <DIR>          .");
+      write(ds + "    <DIR>          ..");
+      listNames().forEach(n => write(ds + "    <DIR>          " + n));
+      write("               0 File(s)              0 bytes");
+      write("               " + listNames().length + " Dir(s)  128,000,000,000 bytes free");
+    }
+    else if (cmd === "mkdir" || cmd === "md") {
+      if (!args[0]) write("The syntax of the command is incorrect.");
+      else write("Directory created: " + args[0], "wt-ok");
+    }
+    else if (cmd === "rmdir" || cmd === "rd") {
+      if (!args[0]) write("The syntax of the command is incorrect.");
+      else write("Directory removed: " + args[0], "wt-ok");
+    }
+    else if (cmd === "del" || cmd === "erase") {
+      if (!args[0]) write("The syntax of the command is incorrect.");
+      else write("Deleted: " + args.join(" "), "wt-ok");
+    }
+    else if (cmd === "copy" || cmd === "move" || cmd === "ren" || cmd === "rename") {
+      write("Operation completed.", "wt-ok");
+    }
+    else if (cmd === "type") {
+      if (!args[0]) write("The syntax of the command is incorrect.");
+      else write("(empty file or not found)");
+    }
+    else if (cmd === "tree") {
+      write(cwdStr());
+      const names = listNames();
+      names.forEach((n, i) => {
+        const last = i === names.length - 1;
+        write((last ? "└───" : "├───") + n);
+      });
+    }
+    else if (cmd === "set") {
+      if (!args.length) {
+        Object.keys(env).sort().forEach(k => write(k + "=" + env[k]));
+      } else {
+        const m = args.join(" ").match(/^([^=]+)=(.*)$/);
+        if (m) { env[m[1].toUpperCase()] = m[2]; }
+        else {
+          const key = args[0].toUpperCase();
+          if (env[key] != null) write(key + "=" + env[key]);
+          else write("Environment variable " + key + " not defined");
+        }
+      }
+    }
+    else if (cmd === "path") {
+      if (!args.length) write("PATH=" + env.PATH);
+      else env.PATH = args.join(" ");
+    }
+    else if (cmd === "prompt") {
+      write("PROMPT set (display still uses path form in this shell).");
+    }
+    else if (cmd === "title") {
+      const t = args.join(" ") || "Command Prompt";
+      const tab = tabs.find(x => x.id === activeTab);
+      if (tab) { tab.title = t; paintTabs(); }
+    }
+    else if (cmd === "color") {
+      write("Color change applied to this session (visual theme fixed in Mount OS).");
+    }
+    else if (cmd === "vol") {
+      write(" Volume in drive C has no label.");
+      write(" Volume Serial Number is 1A2B-3C4D");
+    }
+    else if (cmd === "systeminfo") {
+      [
+        "Host Name:                 " + host,
+        "OS Name:                   Microsoft Windows 10 Pro",
+        "OS Version:                10.0.22631 N/A Build 22631",
+        "System Manufacturer:       Mount OS Virtual",
+        "System Model:              Browser PC",
+        "System Type:               x64-based PC",
+        "Total Physical Memory:     16,384 MB",
+        "Available Physical Memory: 8,192 MB"
+      ].forEach(l => write(l));
+    }
+    else if (cmd === "ipconfig") {
+      write("Windows IP Configuration");
+      write("");
+      write("Ethernet adapter Ethernet:");
+      write("   Connection-specific DNS Suffix  . : local");
+      write("   IPv4 Address. . . . . . . . . . . : 10.0.0.15");
+      write("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
+      write("   Default Gateway . . . . . . . . . : 10.0.0.1");
+    }
+    else if (cmd === "ping") {
+      const target = args[0] || "localhost";
+      write("Pinging " + target + " with 32 bytes of data:");
+      for (let i = 0; i < 4; i++) write("Reply from " + target + ": bytes=32 time=" + (Math.floor(Math.random()*20)+1) + "ms TTL=64");
+      write("");
+      write("Ping statistics for " + target + ":");
+      write("    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)");
+    }
+    else if (cmd === "tasklist") {
+      write("Image Name                     PID Session Name        Session#    Mem Usage");
+      write("========================= ======== ================ =========== ============");
+      write("System Idle Process              0 Services                   0          8 K");
+      write("System                           4 Services                   0        132 K");
+      write("MountOS.exe                   1337 Console                    1     64,000 K");
+      write("RuntimeBroker.exe             2048 Console                    1     12,400 K");
+      openWins.forEach((w, id) => write((id + ".exe").padEnd(26) + " " + String(1000 + id.length * 97).padStart(8) + " Console                    1     25,000 K"));
+    }
+    else if (cmd === "start") {
+      const app = (args[0] || "").toLowerCase();
+      const map = { files: "files", explorer: "files", notes: "notes", calc: "calc", calculator: "calc", settings: "settings", browser: "browser", mount: "browser", games: "games", ai: "ai", terminal: "terminal", cmd: "terminal", wt: "terminal" };
+      if (map[app]) { write("Starting " + map[app] + "...", "wt-ok"); openApp(map[app]); }
+      else if (!args.length) write("The system cannot find the file " + (args[0] || "") + ".");
+      else write("Started: " + args.join(" "), "wt-ok");
+    }
+    else if (cmd === "open") {
       const app = (args[0] || "").toLowerCase();
       const map = { files: "files", explorer: "files", notes: "notes", calc: "calc", calculator: "calc", settings: "settings", browser: "browser", mount: "browser", games: "games", ai: "ai", terminal: "terminal" };
-      if (map[app]) { textLine("Opening " + map[app] + "…", "term-ok"); openApp(map[app]); }
-      else textLine("Usage: open [files|notes|calc|games|settings|browser|ai]", "term-err");
+      if (map[app]) { openApp(map[app]); write("OK", "wt-ok"); }
+      else write("Usage: OPEN [files|notes|calc|games|settings|browser|ai]", "wt-err");
     }
-    else if (c === "fortune") {
-      const lines = [
-        "The mountain does not climb itself.",
-        "404: motivation not found — try neofetch.",
-        "There is no cloud, only someone else's computer.",
-        "sudo make me a sandwich — permission denied.",
-        "In Mount OS, no one can hear you segfault."
-      ];
-      textLine(lines[Math.floor(Math.random() * lines.length)], "term-info");
+    else if (cmd === "exit") {
+      closeWin("terminal");
+      return;
     }
-    else textLine("command not found: " + c + " — type help", "term-err");
+    else if (cmd === "neofetch" || cmd === "fetch") neofetch();
+    else if (cmd === "assoc") write(".txt=txtfile");
+    else if (cmd === "find") write("FIND: parameter format not correct");
+    else {
+      write("'" + parts[0] + "' is not recognized as an internal or external command,");
+      write("operable program or batch file.");
+    }
+    write("");
   }
 
+  root.querySelector("#wt-newtab").onclick = () => {
+    tabs.push({ id: nextTab++, title: "Command Prompt" });
+    activeTab = tabs[tabs.length - 1].id;
+    paintTabs();
+    out.innerHTML = "";
+    banner();
+    write("");
+    input.focus();
+  };
+
+  paintTabs();
   setPrompt();
-  textLine("Mount OS Terminal — type help or neofetch", "term-info");
+  banner();
+  write("");
   input.focus();
   input.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
       run(input.value);
       input.value = "";
+      setPrompt();
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      if (histIdx > 0) { histIdx--; input.value = history[histIdx] || ""; }
+      if (histIdx > 0) { histIdx--; input.value = hist[histIdx] || ""; input.setSelectionRange(input.value.length, input.value.length); }
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
-      if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx] || ""; }
-      else { histIdx = history.length; input.value = ""; }
+      if (histIdx < hist.length - 1) { histIdx++; input.value = hist[histIdx] || ""; }
+      else { histIdx = hist.length; input.value = ""; }
+    } else if (e.key === "c" && e.ctrlKey) {
+      e.preventDefault();
+      write(cwdStr() + ">" + input.value + "^C");
+      input.value = "";
+    } else if (e.key === "l" && e.ctrlKey) {
+      e.preventDefault();
+      out.innerHTML = "";
     }
   });
-  root.addEventListener("mousedown", function () { input.focus(); });
+  root.addEventListener("mousedown", () => input.focus());
 }
 
 function renderSettings(root) {
@@ -1825,6 +2104,38 @@ renderUserList();
 state.sessionUserId = null;
 save();
 showScreen("lock");
+
+// Background music — Aria Math, loops while the tab is open
+(function setupBgMusic() {
+  const audio = document.getElementById("bg-music");
+  if (!audio) return;
+  audio.loop = true;
+  audio.volume = 0.45;
+  let started = false;
+  function tryPlay() {
+    if (started && !audio.paused) return;
+    const p = audio.play();
+    if (p && p.then) {
+      p.then(function () { started = true; }).catch(function () {});
+    } else {
+      started = true;
+    }
+  }
+  tryPlay();
+  // Browsers often block autoplay until a user gesture
+  function onGesture() {
+    tryPlay();
+    if (started && !audio.paused) {
+      document.removeEventListener("pointerdown", onGesture, true);
+      document.removeEventListener("keydown", onGesture, true);
+    }
+  }
+  document.addEventListener("pointerdown", onGesture, true);
+  document.addEventListener("keydown", onGesture, true);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) tryPlay();
+  });
+})();
 
 // Register UV service worker early so the proxy is ready when needed
 try { ensureProxySW(); } catch (e) {}

@@ -973,30 +973,60 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
 }
 
 
-/* ── Terminal ── */
+
+
+/* ── Windows Terminal style ── */
 .desk-icon .ico.term-ico, .start-app .ico.term-ico {
-  background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+  background: linear-gradient(135deg, #0c0c0c, #1a1a1a);
   border: 1px solid rgba(255,255,255,0.12);
 }
-.term-app {
-  height: 100%; background: #0c0c0c; color: #d4d4d4;
-  display: flex; flex-direction: column; font-family: "Minecraft", ui-monospace, monospace;
-  font-size: 13px; line-height: 1.45;
+.wt-app {
+  height: 100%; display: flex; flex-direction: column;
+  background: #0c0c0c; color: #cccccc;
+  font-family: "Cascadia Mono", "Consolas", "Minecraft", ui-monospace, monospace;
+  font-size: 13px; line-height: 1.4;
 }
-.term-out {
-  flex: 1; overflow: auto; padding: 12px 14px; white-space: pre-wrap; word-break: break-word;
+.wt-tabbar {
+  display: flex; align-items: flex-end; gap: 2px;
+  background: #1a1a1a; padding: 6px 8px 0; flex-shrink: 0;
+  border-bottom: 1px solid #2a2a2a;
 }
-.term-out .term-line { margin: 0 0 2px; }
-.term-out .term-cmd { color: #9cdcfe; }
-.term-out .term-ok { color: #4ec9b0; }
-.term-out .term-err { color: #f48771; }
-.term-out .term-info { color: #ce9178; }
-.term-input-row {
-  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
-  border-top: 1px solid rgba(255,255,255,0.08); background: #111;
+.wt-tabs { display: flex; gap: 2px; align-items: flex-end; overflow-x: auto; }
+.wt-tab {
+  display: flex; align-items: center; gap: 8px;
+  border: 0; background: transparent; color: #aaa;
+  padding: 6px 10px; border-radius: 8px 8px 0 0; font-size: 12px;
+  cursor: pointer; max-width: 180px; font-family: inherit;
 }
-.term-prompt { color: #4ec9b0; flex-shrink: 0; }
-.term-input {
-  flex: 1; border: 0; background: transparent; color: #eee; outline: none;
-  font-family: inherit; font-size: 13px;
+.wt-tab.active { background: #0c0c0c; color: #fff; }
+.wt-tab:hover:not(.active) { background: #252525; }
+.wt-tab-icon { color: #60cdff; font-size: 10px; }
+.wt-tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wt-tab-x {
+  opacity: 0.5; padding: 0 4px; border-radius: 4px; font-size: 14px; line-height: 1;
+}
+.wt-tab-x:hover { opacity: 1; background: rgba(255,255,255,0.12); }
+.wt-newtab {
+  border: 0; background: transparent; color: #ccc; width: 28px; height: 28px;
+  border-radius: 6px; font-size: 16px; cursor: pointer; margin-bottom: 4px;
+}
+.wt-newtab:hover { background: rgba(255,255,255,0.08); }
+.wt-tabbar-space { flex: 1; }
+.wt-body { flex: 1; display: flex; flex-direction: column; min-height: 0; background: #0c0c0c; }
+.wt-out {
+  flex: 1; overflow: auto; padding: 10px 14px 4px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.wt-line { margin: 0; }
+.wt-ok { color: #13a10e; }
+.wt-err { color: #c50f1f; }
+.wt-accent { color: #3b78ff; }
+.wt-input-row {
+  display: flex; align-items: center; gap: 0; padding: 4px 14px 12px;
+  flex-shrink: 0;
+}
+.wt-prompt { color: #cccccc; flex-shrink: 0; white-space: nowrap; }
+.wt-input {
+  flex: 1; border: 0; background: transparent; color: #cccccc; outline: none;
+  font-family: inherit; font-size: 13px; padding: 0 0 0 2px; caret-color: #fff;
 }
