@@ -1199,3 +1199,28 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px v
 .notif-panel {
   right: 8px;
 }
+
+.s-select {
+  width: 100%; max-width: 320px; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.35);
+  color: #fff; font-size: 13px; font-family: inherit;
+}
+.wp-preview {
+  width: 100%; max-width: 420px; aspect-ratio: 16/9; border-radius: 10px;
+  background: #0a0a14 center/cover no-repeat; border: 1px solid rgba(255,255,255,0.1);
+  display: grid; place-items: center; color: #9ab; font-size: 13px;
+}
+.wp-preview.is-animated {
+  background: linear-gradient(160deg, #0b0b1a, #1a1040 50%, #0a1528);
+}
+.wp-thumbs {
+  display: flex; flex-wrap: wrap; gap: 8px; width: 100%;
+}
+.wp-thumb {
+  width: 88px; height: 52px; border-radius: 8px; border: 2px solid transparent;
+  background: #151520 center/cover no-repeat; cursor: pointer; padding: 0;
+  color: #9ab; font-size: 11px;
+}
+.wp-thumb:hover { border-color: rgba(255,255,255,0.25); }
+.wp-thumb.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.wp-thumb span { display: grid; place-items: center; height: 100%; }

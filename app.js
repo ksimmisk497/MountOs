@@ -1,5 +1,25 @@
 const STORE = "mount_os_v1";
 const WALLPAPER_URL = "wallpaper.jpg";
+const WALLPAPER_CATALOG = [
+  { id: "animated", name: "Default", file: null },
+  { id: "aurora-peak", name: "Mountain", file: "wallpapers/aurora-peak.jpg" },
+  { id: "night-ridge", name: "Snow Peak", file: "wallpapers/night-ridge.jpg" },
+  { id: "misty-valley", name: "Valley", file: "wallpapers/misty-valley.jpg" },
+  { id: "purple-dusk", name: "Night Sky", file: "wallpapers/purple-dusk.jpg" },
+  { id: "neon-city", name: "City", file: "wallpapers/neon-city.jpg" },
+  { id: "ocean-dark", name: "Ocean", file: "wallpapers/ocean-dark.jpg" },
+  { id: "forest-fog", name: "Forest", file: "wallpapers/forest-fog.jpg" },
+  { id: "starfield", name: "Space", file: "wallpapers/starfield.jpg" },
+  { id: "legacy", name: "Red Mountain", file: "wallpaper.jpg" }
+];
+function resolveWallpaperSrc(key) {
+  if (!key || key === "default" || key === "animated") return null;
+  if (/^data:|^blob:|^https?:/i.test(key)) return key;
+  var hit = WALLPAPER_CATALOG.find(function (w) { return w.id === key; });
+  if (hit) return hit.file;
+  return key; // path or unknown
+}
+
 const GEAR_URL = "settings-icon.png";
 const USER_ICON = `<svg class="user-icon" viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true"><circle cx="24" cy="24" r="24" fill="#6b6b6b"/><circle cx="24" cy="18" r="8" fill="#e8e8e8"/><path d="M8 42c0-8.8 7.2-14 16-14s16 5.2 16 14" fill="#e8e8e8"/></svg>`;
 const APPS = [
@@ -166,18 +186,16 @@ function showScreen(id) {
 }
 function applyWallpaper() {
   var wp = document.getElementById("wallpaper");
-  var photo = document.getElementById("wp-photo");
-  var src = null;
+  var key = "animated";
   try {
-    if (state && state.settings && state.settings.wallpaper && state.settings.wallpaper !== "default" && state.settings.wallpaper !== "animated") {
-      src = state.settings.wallpaper;
-    }
+    if (state && state.settings && state.settings.wallpaper) key = state.settings.wallpaper;
   } catch (e) {}
+  if (key === "default") key = "animated";
+  var src = resolveWallpaperSrc(key);
   if (src) {
     document.documentElement.style.setProperty("--wp-image", "url(\"" + String(src).replace(/"/g, '\\"') + "\")");
     if (wp) wp.classList.add("photo-mode");
   } else {
-    // animated canvas wallpaper (default)
     document.documentElement.style.setProperty("--wp-image", "none");
     if (wp) wp.classList.remove("photo-mode");
     startAnimatedWallpaper();
@@ -2228,13 +2246,75 @@ function renderSettings(root) {
       main.querySelector("#t-notif").onclick = function () { this.classList.toggle("on"); };
     }
     if (panel === "personalize") {
+      var cur = (state.settings && state.settings.wallpaper) || "animated";
+      if (cur === "default") cur = "animated";
+      var opts = WALLPAPER_CATALOG.map(function (w) {
+        return '<option value="' + w.id + '"' + (w.id === cur || (cur === w.file) ? " selected" : "") + '>' + w.name + '</option>';
+      }).join("");
+      // if custom data URL
+      var customOpt = "";
+      if (cur && cur.indexOf("data:") === 0) {
+        customOpt = '<option value="__custom" selected>Custom image</option>';
+      }
       main.innerHTML = `
         <h3>Personalization</h3>
-        <div class="sub">Colors</div>
+        <div class="sub">Background & colors</div>
+        <div class="s-card">
+          <div class="row" style="align-items:flex-start;flex-direction:column;gap:12px">
+            <div style="width:100%"><b>Wallpaper</b><p>Choose a background for your desktop</p></div>
+            <select id="wp-select" class="s-select">${opts}${customOpt}</select>
+            <div class="wp-preview" id="wp-preview"></div>
+            <div class="wp-thumbs" id="wp-thumbs"></div>
+          </div>
+        </div>
         <div class="s-card"><div class="row">
           <div><b>Accent color</b><p>Windows blue</p></div>
           <span style="width:28px;height:28px;border-radius:4px;background:#60cdff"></span>
         </div></div>`;
+      var sel = main.querySelector("#wp-select");
+      var prev = main.querySelector("#wp-preview");
+      var thumbs = main.querySelector("#wp-thumbs");
+      function paintPreview(id) {
+        var item = WALLPAPER_CATALOG.find(function (w) { return w.id === id; });
+        if (!item || !item.file) {
+          prev.style.backgroundImage = "none";
+          prev.classList.add("is-animated");
+          prev.textContent = "Animated";
+        } else {
+          prev.classList.remove("is-animated");
+          prev.textContent = "";
+          prev.style.backgroundImage = 'url("' + item.file + '")';
+        }
+        thumbs.querySelectorAll("button").forEach(function (b) {
+          b.classList.toggle("active", b.dataset.id === id);
+        });
+      }
+      WALLPAPER_CATALOG.forEach(function (w) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "wp-thumb" + (w.id === cur ? " active" : "");
+        b.dataset.id = w.id;
+        if (w.file) b.style.backgroundImage = 'url("' + (w.file.replace(".jpg", "-thumb.jpg")) + '")';
+        else b.innerHTML = "<span>Live</span>";
+        b.title = w.name;
+        b.onclick = function () {
+          sel.value = w.id;
+          state.settings.wallpaper = w.id;
+          save();
+          applyWallpaper();
+          paintPreview(w.id);
+        };
+        thumbs.appendChild(b);
+      });
+      sel.onchange = function () {
+        var v = sel.value;
+        if (v === "__custom") return;
+        state.settings.wallpaper = v;
+        save();
+        applyWallpaper();
+        paintPreview(v);
+      };
+      paintPreview(cur.indexOf("data:") === 0 ? "animated" : cur);
     }
     if (panel === "accounts") {
       const rows = state.users.map(u => `

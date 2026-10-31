@@ -1,0 +1,56 @@
+[
+  {
+    "id": "animated",
+    "name": "Animated",
+    "file": null,
+    "thumb": null
+  },
+  {
+    "id": "aurora-peak",
+    "name": "Mountain",
+    "file": "wallpapers/aurora-peak.jpg",
+    "thumb": "wallpapers/aurora-peak-thumb.jpg"
+  },
+  {
+    "id": "night-ridge",
+    "name": "Snow Peak",
+    "file": "wallpapers/night-ridge.jpg",
+    "thumb": "wallpapers/night-ridge-thumb.jpg"
+  },
+  {
+    "id": "misty-valley",
+    "name": "Valley",
+    "file": "wallpapers/misty-valley.jpg",
+    "thumb": "wallpapers/misty-valley-thumb.jpg"
+  },
+  {
+    "id": "purple-dusk",
+    "name": "Night Sky",
+    "file": "wallpapers/purple-dusk.jpg",
+    "thumb": "wallpapers/purple-dusk-thumb.jpg"
+  },
+  {
+    "id": "neon-city",
+    "name": "City",
+    "file": "wallpapers/neon-city.jpg",
+    "thumb": "wallpapers/neon-city-thumb.jpg"
+  },
+  {
+    "id": "ocean-dark",
+    "name": "Ocean",
+    "file": "wallpapers/ocean-dark.jpg",
+    "thumb": "wallpapers/ocean-dark-thumb.jpg"
+  },
+  {
+    "id": "forest-fog",
+    "name": "Forest",
+    "file": "wallpapers/forest-fog.jpg",
+    "thumb": "wallpapers/forest-fog-thumb.jpg"
+  },
+  {
+    "id": "starfield",
+    "name": "Space",
+    "file": "wallpapers/starfield.jpg",
+    "thumb": "wallpapers/starfield-thumb.jpg"
+  }
+]
