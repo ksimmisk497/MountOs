@@ -1,7 +1,7 @@
 const STORE = "mount_os_v1";
 const WALLPAPER_URL = "wallpaper.jpg";
 const WALLPAPER_CATALOG = [
-  { id: "animated", name: "Default", file: null },
+  { id: "animated", name: "Animated", file: null },
   { id: "aurora-peak", name: "Mountain", file: "wallpapers/aurora-peak.jpg" },
   { id: "night-ridge", name: "Snow Peak", file: "wallpapers/night-ridge.jpg" },
   { id: "misty-valley", name: "Valley", file: "wallpapers/misty-valley.jpg" },
@@ -30,7 +30,8 @@ const APPS = [
   { id: "files", name: "File Explorer", icon: "FILES", pinned: true, desktop: false },
   { id: "notes", name: "Notes", icon: "NOTES", pinned: true, desktop: false },
   { id: "calc", name: "Calculator", icon: "CALC", pinned: true, desktop: false },
-  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false }
+  { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false },
+  { id: "imagine", name: "Mount Imagine", icon: "IMAGINE", pinned: true, desktop: true }
 ];
 
 
@@ -42,6 +43,7 @@ function appIconHTML(icon, size) {
   if (icon === "GEAR") return null; // handled with gearImg
   if (icon === "WEB") return `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
   if (icon === "GAME") return `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
+  if (icon === "IMAGINE") return `<div class="ico imagine-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></div>`;
   if (icon === "AI") return `<div class="ico ai-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg></div>`;
   if (icon === "FILES") return `<div class="ico files-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
   if (icon === "NOTES") return `<div class="ico notes-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4M8 12h8M8 16h6"/></svg></div>`;
@@ -57,6 +59,7 @@ function appIconHTML(icon, size) {
   return `<div class="ico">${icon}</div>`;
 }
 const MOUNT_AI_URL = "https://blackhole-ai.weswoodland13.workers.dev";
+const MOUNT_IMAGINE_URL = MOUNT_AI_URL + "/api/image";
 
 const GAMES_ICON = "games-icon.png";
 let GAMES_CATALOG = null;
@@ -80,31 +83,27 @@ function save() {
 }
 
 
-/* Custom cursor — direct GPU transform, no lag loop */
+/* Custom cursor — zero lag on desktop */
 (function () {
   const c = document.getElementById("cursor");
   if (!c) return;
   const ring = document.getElementById("cursor-ring");
-  if (ring) ring.style.display = "none";
-  // Hotspot near feet of egg
-  const ox = 0.4, oy = 0.85;
+  if (ring) ring.remove();
+  // Use left/top only via transform; avoid filter/transitions (they lag)
+  c.style.filter = "none";
+  c.style.transition = "none";
+  c.style.willChange = "transform";
+  c.style.pointerEvents = "none";
+  var ox = 14, oy = 40; // hotspot near feet
+  var ready = false;
   function move(e) {
-    c.style.transform = "translate3d(" + (e.clientX - 36 * ox) + "px," + (e.clientY - 48 * oy) + "px,0)";
-    document.body.classList.add("ready");
+    c.style.transform = "translate3d(" + (e.clientX - ox) + "px," + (e.clientY - oy) + "px,0)";
+    if (!ready) { ready = true; document.body.classList.add("ready"); }
   }
-  document.addEventListener("pointermove", move, { passive: true });
-  document.addEventListener("mousedown", function () { c.classList.add("click"); });
-  document.addEventListener("mouseup", function () { c.classList.remove("click"); });
-  document.addEventListener("mouseover", function (e) {
-    if (e.target.closest("button, input, select, a, .user-chip, .desk-icon, .tb, .tb-bell, .snav, .browser-tab, .fe-tile, .game-tile")) {
-      c.classList.add("dot");
-    }
-  });
-  document.addEventListener("mouseout", function (e) {
-    if (e.target.closest("button, input, select, a, .user-chip, .desk-icon, .tb, .tb-bell, .snav, .browser-tab, .fe-tile, .game-tile")) {
-      c.classList.remove("dot");
-    }
-  });
+  // mousemove is fine and slightly cheaper than pointermove on some desktops
+  window.addEventListener("mousemove", move, { passive: true });
+  window.addEventListener("mousedown", function () { c.classList.add("click"); }, { passive: true });
+  window.addEventListener("mouseup", function () { c.classList.remove("click"); }, { passive: true });
 })();
 
 
@@ -518,13 +517,13 @@ function openApp(id) {
   win.className = "window";
   win.dataset.id = id;
   const w = Math.min(
-    id === "settings" || id === "games" || id === "ai" || id === "files" || id === "notes" ? 1020 :
+    id === "settings" || id === "games" || id === "ai" || id === "imagine" || id === "files" || id === "notes" ? 1020 :
     id === "browser" ? 1000 :
     id === "calc" ? 320 : id === "terminal" ? 900 : 520,
     innerWidth - 16
   );
   const h = Math.min(
-    id === "settings" || id === "ai" || id === "files" || id === "notes" ? 640 :
+    id === "settings" || id === "ai" || id === "imagine" || id === "files" || id === "notes" ? 640 :
     id === "games" ? Math.min(innerHeight - 80, 820) :
     id === "browser" ? 640 :
     id === "calc" ? 440 : id === "terminal" ? 560 : 380,
@@ -540,6 +539,7 @@ function openApp(id) {
   if (app.icon === "GEAR") wicon = `<div class="wicon settings-wicon"><img src="${GEAR_URL}" alt=""></div>`;
   else if (app.icon === "WEB") wicon = `<div class="wicon" style="background:#2563eb;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg></div>`;
   else if (app.icon === "GAME") wicon = `<div class="wicon" style="background:#333;padding:2px"><img src="${GAMES_ICON}" alt="" style="width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1)"></div>`;
+  else if (app.icon === "IMAGINE") wicon = `<div class="wicon" style="background:linear-gradient(135deg,#a855f7,#ec4899);display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></div>`;
   else if (app.icon === "AI") wicon = `<div class="wicon" style="background:linear-gradient(135deg,#60cdff,#8b5cf6)"></div>`;
   else if (app.icon === "FILES") wicon = `<div class="wicon" style="background:#e8a317;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
   else if (app.icon === "NOTES") wicon = `<div class="wicon" style="background:#f5c542;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#1a1a1a" stroke-width="2"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4"/></svg></div>`;
@@ -571,6 +571,7 @@ function openApp(id) {
   else if (id === "browser") renderBrowser(body);
   else if (id === "games") renderGames(body);
   else if (id === "ai") renderMountAI(body);
+  else if (id === "imagine") renderImagine(body);
   else if (id === "files") renderFiles(body);
   else if (id === "notes") renderNotes(body);
   else if (id === "calc") renderCalc(body);
@@ -635,6 +636,7 @@ function tbIconHTML(app) {
   if (app.icon === "GEAR") return `<span class="gear-ico"><img src="${GEAR_URL}" alt=""></span>`;
   if (app.icon === "WEB") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`;
   if (app.icon === "GAME") return `<img src="${GAMES_ICON}" alt="" style="width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)">`;
+  if (app.icon === "IMAGINE") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e879f9" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg>`;
   if (app.icon === "AI") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg>`;
   if (app.icon === "FILES") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e8a317" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>`;
   if (app.icon === "NOTES") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f5c542" stroke-width="1.8"><path d="M5 3h11l3 3v15H5V3z"/><path d="M14 3v4h4M8 12h8M8 16h6"/></svg>`;
@@ -985,6 +987,132 @@ function renderGames(root) {
 
 
 
+
+
+
+
+
+function renderImagine(root) {
+  root.innerHTML = `
+    <div class="imagine-chat">
+      <div class="imagine-chat-top">
+        <span>Mount Imagine</span>
+        <small>Powered by your AI worker</small>
+      </div>
+      <div class="imagine-messages" id="im-msgs"></div>
+      <form class="imagine-compose" id="im-form">
+        <input id="im-input" type="text" placeholder="a red dragon over a city..." autocomplete="off" />
+        <button type="submit" id="im-send">Send</button>
+      </form>
+    </div>`;
+
+  const msgs = root.querySelector("#im-msgs");
+  const form = root.querySelector("#im-form");
+  const input = root.querySelector("#im-input");
+
+  function addBubble(role, html) {
+    var d = document.createElement("div");
+    d.className = "im-bubble im-" + role;
+    d.innerHTML = html;
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  }
+
+  function saveDataUrlToPictures(dataUrl, name) {
+    try {
+      var fs = ensureFS();
+      var pics = (fs.children || []).find(function (c) { return c.name === "Pictures" && c.type === "folder"; });
+      if (!pics) {
+        pics = { type: "folder", name: "Pictures", children: [] };
+        fs.children.push(pics);
+      }
+      if (!pics.children) pics.children = [];
+      pics.children.push({ type: "file", name: name, mime: "image/png", dataUrl: dataUrl, content: "" });
+      save();
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function handlePrompt(text) {
+    text = String(text || "").trim();
+    if (!text) return;
+    addBubble("user", "<p></p>").querySelector("p").textContent = text;
+    var pending = addBubble("bot", "<p class='im-thinking'>Painting… this can take a few seconds.</p>");
+    input.disabled = true;
+
+    var endpoint = (typeof MOUNT_IMAGINE_URL !== "undefined" ? MOUNT_IMAGINE_URL : (MOUNT_AI_URL + "/api/image"));
+
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: text })
+    }).then(function (r) {
+      return r.text().then(function (raw) {
+        var data = null;
+        try { data = raw ? JSON.parse(raw) : null; } catch (e) { data = null; }
+        if (!r.ok) {
+          var msg = (data && data.error) || raw || ("Request failed (" + r.status + ")");
+          if (r.status === 404 || /not found/i.test(String(msg))) {
+            msg = "Image API not found on the worker. Deploy cloudflare-worker-ai.js to your Worker (with AI binding) so /api/image exists.";
+          }
+          throw new Error(msg);
+        }
+        if (!data) throw new Error("Bad response from image API.");
+        return data;
+      });
+    }).then(function (data) {
+      var src = data.image || data.url || data.data;
+      if (!src) throw new Error("No image returned. Deploy the worker with /api/image (see cloudflare-worker-ai.js).");
+      pending.innerHTML =
+        '<p>Here you go:</p>' +
+        '<div class="im-img-wrap"><img src="' + src + '" alt=""></div>' +
+        '<div class="im-actions">' +
+        '<button type="button" data-act="save">Save to Pictures</button>' +
+        '<button type="button" data-act="wall">Set wallpaper</button>' +
+        '</div>';
+      pending.querySelector('[data-act="wall"]').onclick = function () {
+        state.settings.wallpaper = src;
+        save();
+        applyWallpaper();
+        addBubble("bot", "<p>Wallpaper set.</p>");
+      };
+      pending.querySelector('[data-act="save"]').onclick = function () {
+        var name = "imagine-" + Date.now() + ".png";
+        if (src.indexOf("data:") === 0) {
+          if (saveDataUrlToPictures(src, name)) addBubble("bot", "<p>Saved to Pictures / " + name + "</p>");
+          else addBubble("bot", "<p>Could not save.</p>");
+        } else {
+          fetch(src).then(function (r) { return r.blob(); }).then(function (blob) {
+            var reader = new FileReader();
+            reader.onload = function () {
+              if (saveDataUrlToPictures(reader.result, name)) addBubble("bot", "<p>Saved to Pictures / " + name + "</p>");
+            };
+            reader.readAsDataURL(blob);
+          }).catch(function () {
+            addBubble("bot", "<p>Save failed.</p>");
+          });
+        }
+      };
+      msgs.scrollTop = msgs.scrollHeight;
+    }).catch(function (err) {
+      pending.innerHTML = "<p class='im-err'></p>";
+      pending.querySelector("p").textContent = (err && err.message) ? err.message : String(err);
+    }).finally(function () {
+      input.disabled = false;
+      input.focus();
+    });
+  }
+
+  addBubble("bot", "<p>Tell me what to make — same AI worker as Mount AI (Flux).</p>");
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    var v = input.value;
+    input.value = "";
+    handlePrompt(v);
+  };
+  input.focus();
+}
 
 function renderMountAI(root) {
   root.innerHTML = `
