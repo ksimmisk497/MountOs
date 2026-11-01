@@ -2856,9 +2856,9 @@ try { ensureProxySW(); } catch (e) {}
 
 
 
+
 function renderMountChat(root) {
-  var myId = ensureMountId();
-  // Always use the signed-in Mount username
+  var myId = (typeof getMountId === "function" ? getMountId() : (typeof ensureMountId === "function" ? ensureMountId() : ("mount_" + Math.random().toString(36).slice(2, 10))));
   function currentName() {
     try {
       var u = currentUser();
@@ -2868,131 +2868,230 @@ function renderMountChat(root) {
     if (el && el.textContent && el.textContent.trim()) return el.textContent.trim();
     return "Player";
   }
+
+  var ROOM = "mountos/chat/v1/global";
+  var MSG_KEY = "mount_chat_msgs_v2";
   var rolesMap = {};
-  var MSG_KEY = "mount_chat_msgs_v1";
-  var channel = null;
+  var seen = {};
+  var client = null;
+  var connected = false;
 
-  root.innerHTML = `
-    <div class="chat-room">
-      <div class="chat-room-top">
-        <span>Mount Chat</span>
-        <small id="chat-room-you"></small>
-      </div>
-      <div class="chat-log" id="chat-log"></div>
-      <form class="chat-compose" id="chat-form">
-        <input id="chat-input" type="text" maxlength="400" placeholder="Type a message…" autocomplete="off" />
-        <button type="submit">Send</button>
-      </form>
-    </div>`;
+  root.innerHTML =
+    '<div class="im-chat">' +
+      '<div class="im-top">' +
+        '<div class="im-top-title">Mount Chat</div>' +
+        '<div class="im-top-status" id="im-status">Connecting…</div>' +
+      '</div>' +
+      '<div class="im-log" id="im-log"></div>' +
+      '<form class="im-compose" id="im-form">' +
+        '<input id="im-input" type="text" maxlength="500" placeholder="iMessage" autocomplete="off" />' +
+        '<button type="submit" id="im-send" aria-label="Send">↑</button>' +
+      '</form>' +
+    '</div>';
 
-  function loadMsgs() {
+  var logEl = root.querySelector("#im-log");
+  var statusEl = root.querySelector("#im-status");
+  var inputEl = root.querySelector("#im-input");
+
+  function loadLocal() {
     try { return JSON.parse(localStorage.getItem(MSG_KEY) || "[]"); } catch (e) { return []; }
   }
-  function saveMsgs(list) {
-    try { localStorage.setItem(MSG_KEY, JSON.stringify(list.slice(-200))); } catch (e) {}
+  function saveLocal(list) {
+    try { localStorage.setItem(MSG_KEY, JSON.stringify(list.slice(-300))); } catch (e) {}
   }
   function tagFor(id) {
     var r = rolesMap[id];
     if (!r) return null;
     return { tag: r.tag || "Member", color: r.color || "#60cdff" };
   }
-  function updateYouLine() {
-    var name = currentName();
-    var t = tagFor(myId);
-    var el = root.querySelector("#chat-room-you");
-    el.textContent = "Signed in as " + name + (t ? " · " + t.tag : "");
+  function msgKey(m) {
+    return String(m.ts) + "|" + String(m.id) + "|" + String(m.text);
   }
-  function renderLog() {
-    var log = root.querySelector("#chat-log");
-    var msgs = loadMsgs();
-    log.innerHTML = "";
+
+  function renderAll() {
+    var msgs = loadLocal().slice().sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+    logEl.innerHTML = "";
+    var lastDay = "";
     msgs.forEach(function (m) {
-      var row = document.createElement("div");
-      row.className = "chat-msg" + (m.id === myId ? " mine" : "");
-      var head = document.createElement("div");
-      head.className = "chat-msg-head";
-      var name = document.createElement("strong");
-      name.textContent = m.name || "User";
-      head.appendChild(name);
-      var tg = tagFor(m.id);
-      if (tg) {
-        var badge = document.createElement("span");
-        badge.className = "chat-tag";
-        badge.style.background = tg.color;
-        badge.textContent = tg.tag;
-        head.appendChild(badge);
+      var day = "";
+      try {
+        day = new Date(m.ts).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+      } catch (e) {}
+      if (day && day !== lastDay) {
+        lastDay = day;
+        var sep = document.createElement("div");
+        sep.className = "im-day";
+        sep.textContent = day;
+        logEl.appendChild(sep);
       }
-      var time = document.createElement("small");
+      var mine = m.id === myId;
+      var row = document.createElement("div");
+      row.className = "im-row" + (mine ? " mine" : "");
+      if (!mine) {
+        var meta = document.createElement("div");
+        meta.className = "im-meta";
+        var nm = document.createElement("span");
+        nm.className = "im-name";
+        nm.textContent = m.name || "User";
+        meta.appendChild(nm);
+        var tg = tagFor(m.id);
+        if (tg) {
+          var badge = document.createElement("span");
+          badge.className = "chat-tag";
+          badge.style.background = tg.color;
+          badge.textContent = tg.tag;
+          meta.appendChild(badge);
+        }
+        row.appendChild(meta);
+      }
+      var bubble = document.createElement("div");
+      bubble.className = "im-bubble";
+      bubble.textContent = m.text || "";
+      row.appendChild(bubble);
+      var time = document.createElement("div");
+      time.className = "im-time";
       try {
         time.textContent = new Date(m.ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
       } catch (e) { time.textContent = ""; }
-      head.appendChild(time);
-      var body = document.createElement("div");
-      body.className = "chat-msg-body";
-      body.textContent = m.text || "";
-      row.appendChild(head);
-      row.appendChild(body);
-      log.appendChild(row);
+      row.appendChild(time);
+      logEl.appendChild(row);
     });
-    log.scrollTop = log.scrollHeight;
+    logEl.scrollTop = logEl.scrollHeight;
   }
-  function pushMsg(m, broadcast) {
-    var list = loadMsgs();
-    if (list.some(function (x) { return x.ts === m.ts && x.id === m.id && x.text === m.text; })) {
-      renderLog();
-      return;
+
+  function ingest(m, fromNet) {
+    if (!m || !m.text) return;
+    m.ts = m.ts || Date.now();
+    m.id = m.id || "unknown";
+    m.name = m.name || "User";
+    var k = msgKey(m);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var list = loadLocal();
+    if (!list.some(function (x) { return msgKey(x) === k; })) {
+      list.push(m);
+      saveLocal(list);
     }
-    list.push(m);
-    saveMsgs(list);
-    renderLog();
-    if (broadcast && channel) {
-      try { channel.postMessage({ type: "chat", msg: m }); } catch (e) {}
-    }
+    renderAll();
   }
+
+  function setStatus(s, ok) {
+    statusEl.textContent = s;
+    statusEl.className = "im-top-status" + (ok ? " on" : "");
+  }
+
+  function publish(m) {
+    var payload = JSON.stringify(m);
+    // local echo first
+    ingest(m, false);
+    // MQTT
+    if (client && connected) {
+      try { client.publish(ROOM, payload, { qos: 0, retain: false }); } catch (e) {}
+    }
+    // same-browser tabs
+    try {
+      if (!window.__mountChatBC) window.__mountChatBC = new BroadcastChannel("mount_chat_v2");
+      window.__mountChatBC.postMessage({ type: "chat", msg: m });
+    } catch (e) {}
+  }
+
+  // BroadcastChannel peers
+  try {
+    if (!window.__mountChatBC) window.__mountChatBC = new BroadcastChannel("mount_chat_v2");
+    window.__mountChatBC.onmessage = function (ev) {
+      if (ev.data && ev.data.type === "chat" && ev.data.msg) ingest(ev.data.msg, true);
+    };
+  } catch (e) {}
+
   function loadRoles() {
-    return fetch("mount-roles.json?t=" + Date.now())
+    fetch("mount-roles.json?t=" + Date.now())
       .then(function (r) { return r.json(); })
       .then(function (data) {
         rolesMap = {};
         (data.roles || []).forEach(function (r) {
           if (r && r.id) rolesMap[String(r.id)] = r;
         });
-        updateYouLine();
-        renderLog();
+        renderAll();
       })
-      .catch(function () {
-        rolesMap = {};
-        updateYouLine();
-        renderLog();
-      });
+      .catch(function () {});
   }
 
-  try {
-    channel = new BroadcastChannel("mount_chat_v1");
-    channel.onmessage = function (ev) {
-      var d = ev.data;
-      if (d && d.type === "chat" && d.msg) pushMsg(d.msg, false);
-    };
-  } catch (e) { channel = null; }
+  function connectMqtt() {
+    setStatus("Connecting…", false);
+    function start(mqttLib) {
+      try {
+        client = mqttLib.connect("wss://broker.hivemq.com:8884/mqtt", {
+          clientId: "mount_" + myId + "_" + Math.random().toString(16).slice(2, 8),
+          clean: true,
+          reconnectPeriod: 3000,
+          connectTimeout: 8000
+        });
+        client.on("connect", function () {
+          connected = true;
+          setStatus("Connected", true);
+          try { client.subscribe(ROOM, { qos: 0 }); } catch (e) {}
+        });
+        client.on("reconnect", function () {
+          connected = false;
+          setStatus("Reconnecting…", false);
+        });
+        client.on("close", function () {
+          connected = false;
+          setStatus("Offline (Servers Broke)", false);
+        });
+        client.on("error", function () {
+          connected = false;
+          setStatus("Offline · local only", false);
+        });
+        client.on("message", function (topic, payload) {
+          try {
+            var m = JSON.parse(String(payload));
+            if (m && m.text) ingest(m, true);
+          } catch (e) {}
+        });
+      } catch (err) {
+        setStatus("Offline · local only", false);
+      }
+    }
 
-  root.querySelector("#chat-form").onsubmit = function (e) {
+    // Load MQTT.js from CDN once
+    if (window.mqtt) {
+      start(window.mqtt);
+      return;
+    }
+    var s = document.createElement("script");
+    s.src = "https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js";
+    s.onload = function () {
+      if (window.mqtt) start(window.mqtt);
+      else setStatus("Offline · local only", false);
+    };
+    s.onerror = function () {
+      setStatus("Offline · local only", false);
+    };
+    document.head.appendChild(s);
+  }
+
+  root.querySelector("#im-form").onsubmit = function (e) {
     e.preventDefault();
-    var input = root.querySelector("#chat-input");
-    var text = (input.value || "").trim();
+    var text = (inputEl.value || "").trim();
     if (!text) return;
-    input.value = "";
-    pushMsg({
+    inputEl.value = "";
+    publish({
       id: myId,
       name: currentName(),
       text: text,
       ts: Date.now()
-    }, true);
+    });
   };
 
+  // seed seen from local
+  loadLocal().forEach(function (m) { seen[msgKey(m)] = 1; });
   loadRoles();
-  renderLog();
-  updateYouLine();
-  root.querySelector("#chat-input").focus();
+  renderAll();
+  connectMqtt();
+  inputEl.focus();
+
+  // cleanup when window closes is hard; leave client connected for session
 }
 
 function renderMinecraft(root) {
