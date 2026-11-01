@@ -82,6 +82,17 @@
       <div id="task-apps" style="display:flex;gap:4px"></div>
     </div>
     <div id="taskbar-right">
+      <button type="button" class="tb-tray" id="tb-vol" title="Volume">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10v4h3l4 3V7l-4 3H4z"/><path d="M16 9a4 4 0 010 6"/><path d="M18.5 7a7 7 0 010 10"/></svg>
+      </button>
+      <div id="vol-panel" class="vol-panel" hidden>
+        <div class="vol-label">Music</div>
+        <input type="range" id="vol-slider" min="0" max="100" value="45" step="1" />
+        <div class="vol-row">
+          <span id="vol-pct">45%</span>
+          <button type="button" id="vol-mute">Mute</button>
+        </div>
+      </div>
       <button type="button" class="tb-bell" id="tb-bell" title="Notifications">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"/>
@@ -124,6 +135,17 @@
 </div>
 
 <div id="ctx"></div>
+<div id="alttab" hidden></div>
+<div id="run-dialog" hidden>
+  <div class="run-box">
+    <div class="run-title">Run</div>
+    <p>Type the name of a program or game.</p>
+    <input id="run-input" type="text" placeholder="games, settings, terminal…" autocomplete="off" />
+    <div class="run-actions"><button type="button" id="run-ok">OK</button><button type="button" id="run-cancel">Cancel</button></div>
+  </div>
+</div>
+<div id="toast-stack"></div>
+
 <script>
 // Boot splash — kick off draw animation immediately, remove from DOM after
 (function() {

@@ -31,7 +31,8 @@ const APPS = [
   { id: "notes", name: "Notes", icon: "NOTES", pinned: true, desktop: false },
   { id: "calc", name: "Calculator", icon: "CALC", pinned: true, desktop: false },
   { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false },
-  { id: "imagine", name: "Mount Imagine", icon: "IMAGINE", pinned: true, desktop: true }
+  { id: "imagine", name: "Mount Imagine", icon: "IMAGINE", pinned: true, desktop: true },
+  { id: "clock", name: "Clock", icon: "CLOCK", pinned: true, desktop: true }
 ];
 
 
@@ -43,6 +44,14 @@ function appIconHTML(icon, size) {
   if (icon === "GEAR") return null; // handled with gearImg
   if (icon === "WEB") return `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
   if (icon === "GAME") return `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
+  if (icon === "CLOCK") return `<div class="ico clock-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>`;
+  if (icon === "PAINT") return `<div class="ico paint-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M5 17l4-4 3 3 7-7"/><path d="M4 20h6"/><circle cx="18" cy="6" r="2"/></svg></div>`;
+  if (icon === "PHOTOS") return `<div class="ico photos-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></div>`;
+  if (icon === "TODO") return `<div class="ico todo-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg></div>`;
+  if (icon === "WEATHER") return `<div class="ico weather-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="10" cy="10" r="4"/><path d="M14 14a4 4 0 1 1 0 6H7a4 4 0 1 1 1-7"/></svg></div>`;
+  if (icon === "MAPS") return `<div class="ico maps-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13M15 7v13"/></svg></div>`;
+  if (icon === "STORE") return `<div class="ico store-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M4 9h16l-1 11H5L4 9z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg></div>`;
+  if (icon === "TASK") return `<div class="ico task-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/></svg></div>`;
   if (icon === "IMAGINE") return `<div class="ico imagine-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></div>`;
   if (icon === "AI") return `<div class="ico ai-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg></div>`;
   if (icon === "FILES") return `<div class="ico files-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>`;
@@ -576,6 +585,7 @@ function openApp(id) {
   else if (id === "notes") renderNotes(body);
   else if (id === "calc") renderCalc(body);
   else if (id === "terminal") renderTerminal(body);
+  else if (id === "clock") renderClockApp(body);
   else body.innerHTML = `<div style="padding:16px">${app.name}</div>`;
 
   document.getElementById("windows").appendChild(win);
@@ -653,7 +663,7 @@ function tbIconHTML(app) {
 }
 
 // Always pinned on the taskbar
-const TASKBAR_PINNED = ["files", "notes", "calc", "terminal"];
+const TASKBAR_PINNED = ["files", "notes", "calc", "terminal", "clock"];
 
 function renderTaskbar() {
   const bar = document.getElementById("task-apps");
@@ -949,6 +959,17 @@ function renderGames(root) {
   }
 
   function playGame(g) {
+    try {
+      var rec = JSON.parse(localStorage.getItem("mount_recent_games") || "[]");
+      rec = rec.filter(function (x) { return x !== g.name; });
+      rec.unshift(g.name);
+      localStorage.setItem("mount_recent_games", JSON.stringify(rec.slice(0, 24)));
+      var plays = JSON.parse(localStorage.getItem("mount_play_counts") || "{}");
+      plays[g.name] = (plays[g.name] || 0) + 1;
+      localStorage.setItem("mount_play_counts", JSON.stringify(plays));
+      if (window.mountToast) window.mountToast("Playing " + g.name);
+      if (window.mountAchievement) window.mountAchievement(plays[g.name]);
+    } catch (e) {}
     playingTitle.textContent = g.name;
     library.hidden = true;
     player.hidden = false;
@@ -977,6 +998,75 @@ function renderGames(root) {
   }
 
   root.querySelector("#games-back").onclick = exitGame;
+  var fullBtn = document.createElement("button");
+  fullBtn.type = "button";
+  fullBtn.className = "games-full-btn";
+  fullBtn.textContent = "Fullscreen";
+  fullBtn.onclick = function () {
+    var el = player;
+    if (!document.fullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+    }
+  };
+  var bar = root.querySelector(".games-player-bar") || root.querySelector("#games-back") && root.querySelector("#games-back").parentElement;
+  if (bar) bar.appendChild(fullBtn);
+
+  // favorites + recent chips
+  try {
+    var favs = JSON.parse(localStorage.getItem("mount_fav_games") || "[]");
+    var recents = JSON.parse(localStorage.getItem("mount_recent_games") || "[]");
+    var chipHost = document.createElement("div");
+    chipHost.className = "games-chips";
+    function addChip(label, names) {
+      if (!names.length) return;
+      var row = document.createElement("div");
+      row.className = "games-chip-row";
+      row.innerHTML = "<span>" + label + "</span>";
+      names.slice(0, 8).forEach(function (n) {
+        var g = (all || []).find(function (x) { return x.name === n; });
+        if (!g && typeof GAMES_EMBEDDED !== "undefined") g = (GAMES_EMBEDDED || []).find(function (x) { return x.name === n; });
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = n;
+        b.onclick = function () {
+          if (g) playGame(g);
+          else { search.value = n; paint(n); }
+        };
+        row.appendChild(b);
+      });
+      chipHost.appendChild(row);
+    }
+    // delay until all loaded
+    var _origPaint = paint;
+    // show chips above grid
+    if (library && !library.querySelector(".games-chips")) {
+      library.insertBefore(chipHost, library.firstChild);
+    }
+    loadGamesCatalog().then(function (list) {
+      all = list || [];
+      addChip("Recent", recents);
+      addChip("Favorites", favs);
+    });
+  } catch (e) {}
+
+  // star favorite on long-press title area
+  if (playingTitle) {
+    playingTitle.style.cursor = "pointer";
+    playingTitle.title = "Click to favorite";
+    playingTitle.onclick = function () {
+      try {
+        var name = playingTitle.textContent;
+        var favs = JSON.parse(localStorage.getItem("mount_fav_games") || "[]");
+        if (favs.indexOf(name) >= 0) favs = favs.filter(function (x) { return x !== name; });
+        else favs.unshift(name);
+        localStorage.setItem("mount_fav_games", JSON.stringify(favs.slice(0, 40)));
+        if (window.mountToast) window.mountToast(favs.indexOf(name) >= 0 ? "Favorited " + name : "Unfavorited " + name);
+      } catch (e) {}
+    };
+  }
+
 
   loadGamesCatalog().then(list => {
     all = list || [];
@@ -2637,7 +2727,10 @@ window.updateBgMusic = function updateBgMusic() {
   const audio = document.getElementById("bg-music");
   if (!audio) return;
   audio.loop = true;
-  audio.volume = 0.18;
+  try {
+    var sv = localStorage.getItem("mount_vol");
+    audio.volume = sv != null ? Math.max(0, Math.min(1, parseFloat(sv))) : 0.45;
+  } catch (e2) { audio.volume = 0.45; }
   function onGesture() {
     window.updateBgMusic();
   }
@@ -2652,3 +2745,991 @@ window.updateBgMusic = function updateBgMusic() {
 
 // Register UV service worker early so the proxy is ready when needed
 try { ensureProxySW(); } catch (e) {}
+
+
+
+
+
+function renderClockApp(root) {
+  root.innerHTML = `<div class="clock-app">
+    <div class="clock-tabs">
+      <button type="button" class="on" data-t="clock">Clock</button>
+      <button type="button" data-t="stop">Stopwatch</button>
+      <button type="button" data-t="timer">Timer</button>
+    </div>
+    <div class="clock-panel" id="ck-panel"></div>
+  </div>`;
+  var panel = root.querySelector("#ck-panel");
+  var mode = "clock";
+  var sw = 0, swOn = false, swIv = null;
+  var timerLeft = 60, timerOn = false, timerIv = null;
+  function paint() {
+    if (mode === "clock") {
+      panel.innerHTML = `<div class="clock-big" id="ck-big"></div><div class="clock-date" id="ck-date"></div>
+        <div class="clock-world">
+          <div><b>UTC</b><span id="ck-utc"></span></div>
+          <div><b>Tokyo</b><span id="ck-tyo"></span></div>
+          <div><b>London</b><span id="ck-lon"></span></div>
+        </div>`;
+      function tick() {
+        var n = new Date();
+        var el = panel.querySelector("#ck-big"); if (el) el.textContent = n.toLocaleTimeString();
+        el = panel.querySelector("#ck-date"); if (el) el.textContent = n.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+        el = panel.querySelector("#ck-utc"); if (el) el.textContent = n.toISOString().substr(11,8) + "Z";
+        try {
+          el = panel.querySelector("#ck-tyo"); if (el) el.textContent = n.toLocaleTimeString(undefined,{timeZone:"Asia/Tokyo"});
+          el = panel.querySelector("#ck-lon"); if (el) el.textContent = n.toLocaleTimeString(undefined,{timeZone:"Europe/London"});
+        } catch (e) {}
+      }
+      tick(); clearInterval(panel._iv); panel._iv = setInterval(tick, 1000);
+    } else if (mode === "stop") {
+      panel.innerHTML = `<div class="clock-big" id="sw-d">0.0</div>
+        <div class="clock-btns"><button type="button" id="sw-t">Start</button><button type="button" id="sw-r">Reset</button></div>`;
+      function show() { panel.querySelector("#sw-d").textContent = (sw/10).toFixed(1) + "s"; }
+      panel.querySelector("#sw-t").onclick = function () {
+        if (swOn) { clearInterval(swIv); swOn = false; this.textContent = "Start"; }
+        else {
+          swOn = true; this.textContent = "Stop";
+          swIv = setInterval(function () { sw++; show(); }, 100);
+        }
+      };
+      panel.querySelector("#sw-r").onclick = function () { sw = 0; show(); };
+      show();
+    } else {
+      panel.innerHTML = `<div class="clock-big" id="tm-d">1:00</div>
+        <div class="clock-btns">
+          <button type="button" id="tm-m30">+30s</button>
+          <button type="button" id="tm-m60">+1m</button>
+          <button type="button" id="tm-t">Start</button>
+          <button type="button" id="tm-r">Reset</button>
+        </div>`;
+      function showT() {
+        var m = Math.floor(timerLeft / 60), s = timerLeft % 60;
+        panel.querySelector("#tm-d").textContent = m + ":" + String(s).padStart(2,"0");
+      }
+      panel.querySelector("#tm-m30").onclick = function () { timerLeft += 30; showT(); };
+      panel.querySelector("#tm-m60").onclick = function () { timerLeft += 60; showT(); };
+      panel.querySelector("#tm-t").onclick = function () {
+        if (timerOn) { clearInterval(timerIv); timerOn = false; this.textContent = "Start"; return; }
+        timerOn = true; this.textContent = "Pause";
+        timerIv = setInterval(function () {
+          if (timerLeft <= 0) {
+            clearInterval(timerIv); timerOn = false;
+            panel.querySelector("#tm-t").textContent = "Start";
+            if (window.mountToast) mountToast("Timer done!");
+            try { new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=").play(); } catch(e){}
+            return;
+          }
+          timerLeft--; showT();
+        }, 1000);
+      };
+      panel.querySelector("#tm-r").onclick = function () { timerLeft = 60; showT(); };
+      showT();
+    }
+  }
+  root.querySelectorAll(".clock-tabs button").forEach(function (b) {
+    b.onclick = function () {
+      root.querySelectorAll(".clock-tabs button").forEach(function (x) { x.classList.remove("on"); });
+      b.classList.add("on");
+      mode = b.getAttribute("data-t");
+      paint();
+    };
+  });
+  paint();
+}
+
+function renderPaintApp(root) {
+  root.innerHTML = `<div class="paint-app">
+    <div class="paint-tools">
+      <input type="color" id="pt-color" value="#60cdff" />
+      <input type="range" id="pt-size" min="1" max="40" value="6" title="Brush size" />
+      <button type="button" id="pt-pen" class="on">Pen</button>
+      <button type="button" id="pt-eraser">Eraser</button>
+      <button type="button" id="pt-clear">Clear</button>
+      <button type="button" id="pt-save">Save</button>
+    </div>
+    <canvas id="pt-cv"></canvas>
+  </div>`;
+  var cv = root.querySelector("#pt-cv");
+  var ctx = cv.getContext("2d");
+  var drawing = false, eraser = false;
+  function resize() {
+    var r = cv.parentElement.getBoundingClientRect();
+    var data = null;
+    try { data = cv.toDataURL(); } catch(e){}
+    cv.width = Math.max(320, r.width);
+    cv.height = Math.max(240, r.height - 48);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0,0,cv.width,cv.height);
+    if (data) {
+      var img = new Image();
+      img.onload = function () { ctx.drawImage(img, 0, 0); };
+      img.src = data;
+    }
+  }
+  resize();
+  var color = root.querySelector("#pt-color");
+  var size = root.querySelector("#pt-size");
+  function pos(e) {
+    var r = cv.getBoundingClientRect();
+    var x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    var y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+    return { x: x, y: y };
+  }
+  function start(e) { e.preventDefault(); drawing = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+  function move(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    var p = pos(e);
+    ctx.lineWidth = parseInt(size.value,10);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = eraser ? "#ffffff" : color.value;
+    ctx.lineTo(p.x,p.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+  }
+  function end() { drawing = false; ctx.beginPath(); }
+  cv.addEventListener("mousedown", start);
+  cv.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", end);
+  cv.addEventListener("touchstart", start, {passive:false});
+  cv.addEventListener("touchmove", move, {passive:false});
+  cv.addEventListener("touchend", end);
+  root.querySelector("#pt-pen").onclick = function () {
+    eraser = false;
+    root.querySelector("#pt-pen").classList.add("on");
+    root.querySelector("#pt-eraser").classList.remove("on");
+  };
+  root.querySelector("#pt-eraser").onclick = function () {
+    eraser = true;
+    root.querySelector("#pt-eraser").classList.add("on");
+    root.querySelector("#pt-pen").classList.remove("on");
+  };
+  root.querySelector("#pt-clear").onclick = function () {
+    ctx.fillStyle = "#fff"; ctx.fillRect(0,0,cv.width,cv.height);
+  };
+  root.querySelector("#pt-save").onclick = function () {
+    try {
+      var dataUrl = cv.toDataURL("image/png");
+      var fs = ensureFS();
+      var pics = (fs.children || []).find(function (c) { return c.name === "Pictures" && c.type === "folder"; });
+      if (!pics) { pics = { type: "folder", name: "Pictures", children: [] }; fs.children.push(pics); }
+      if (!pics.children) pics.children = [];
+      var name = "paint-" + Date.now() + ".png";
+      pics.children.push({ type: "file", name: name, mime: "image/png", dataUrl: dataUrl, content: "" });
+      save();
+      if (window.mountToast) mountToast("Saved to Pictures / " + name);
+    } catch (e) { if (window.mountToast) mountToast("Save failed"); }
+  };
+}
+
+function renderPhotosApp(root) {
+  root.innerHTML = `<div class="photos-app"><div class="photos-grid" id="ph-grid"></div><div class="photos-empty" id="ph-empty">No images in Pictures yet. Save from Paint or Imagine.</div></div>`;
+  var grid = root.querySelector("#ph-grid");
+  var empty = root.querySelector("#ph-empty");
+  var imgs = [];
+  try {
+    var fs = ensureFS();
+    var pics = (fs.children || []).find(function (c) { return c.name === "Pictures" && c.type === "folder"; });
+    if (pics && pics.children) {
+      imgs = pics.children.filter(function (f) { return f.dataUrl || (f.mime && f.mime.indexOf("image") === 0); });
+    }
+  } catch (e) {}
+  if (!imgs.length) { empty.hidden = false; return; }
+  empty.hidden = true;
+  imgs.forEach(function (f) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "photos-tile";
+    b.innerHTML = "<img alt='' /><span></span>";
+    b.querySelector("img").src = f.dataUrl || "";
+    b.querySelector("span").textContent = f.name;
+    b.onclick = function () {
+      if (f.dataUrl) {
+        state.settings.wallpaper = f.dataUrl;
+        save(); applyWallpaper();
+        if (window.mountToast) mountToast("Set as wallpaper");
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+function renderTodoApp(root) {
+  var key = "mount_todos";
+  var items = [];
+  try { items = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
+  root.innerHTML = `<div class="todo-app">
+    <form id="td-form" class="todo-form"><input id="td-in" placeholder="Add a task…" /><button type="submit">Add</button></form>
+    <div id="td-list" class="todo-list"></div>
+  </div>`;
+  function saveTodos() { try { localStorage.setItem(key, JSON.stringify(items)); } catch (e) {} }
+  function paint() {
+    var list = root.querySelector("#td-list");
+    list.innerHTML = "";
+    items.forEach(function (it, i) {
+      var row = document.createElement("label");
+      row.className = "todo-row" + (it.done ? " done" : "");
+      row.innerHTML = `<input type="checkbox" ${it.done ? "checked" : ""}/><span></span><button type="button" data-i="${i}">×</button>`;
+      row.querySelector("span").textContent = it.text;
+      row.querySelector("input").onchange = function () { it.done = this.checked; saveTodos(); paint(); };
+      row.querySelector("button").onclick = function () { items.splice(i, 1); saveTodos(); paint(); };
+      list.appendChild(row);
+    });
+  }
+  root.querySelector("#td-form").onsubmit = function (e) {
+    e.preventDefault();
+    var v = root.querySelector("#td-in").value.trim();
+    if (!v) return;
+    items.unshift({ text: v, done: false });
+    root.querySelector("#td-in").value = "";
+    saveTodos(); paint();
+  };
+  paint();
+}
+
+function renderWeatherApp(root) {
+  root.innerHTML = `<div class="weather-app">
+    <div class="weather-hero"><div class="weather-temp" id="wx-t">--°</div><div class="weather-desc" id="wx-d">Loading…</div></div>
+    <div class="weather-meta" id="wx-m"></div>
+    <button type="button" class="btn" id="wx-go" style="width:auto;margin:12px">Refresh</button>
+  </div>`;
+  function load() {
+    // Open-Meteo free, no key — try geolocation else default
+    function fetchWx(lat, lon, label) {
+      fetch("https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current=temperature_2m,weather_code,wind_speed_10m")
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          var c = d.current || {};
+          root.querySelector("#wx-t").textContent = Math.round(c.temperature_2m) + "°";
+          root.querySelector("#wx-d").textContent = label || "Current";
+          root.querySelector("#wx-m").textContent = "Wind " + (c.wind_speed_10m || "?") + " · code " + (c.weather_code || "");
+        })
+        .catch(function () {
+          root.querySelector("#wx-d").textContent = "Could not load weather (offline?)";
+        });
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (p) { fetchWx(p.coords.latitude, p.coords.longitude, "Your location"); },
+        function () { fetchWx(40.71, -74.01, "New York"); },
+        { timeout: 4000 }
+      );
+    } else fetchWx(40.71, -74.01, "New York");
+  }
+  root.querySelector("#wx-go").onclick = load;
+  load();
+}
+
+function renderMapsApp(root) {
+  root.innerHTML = `<div class="maps-app"><iframe class="maps-frame" src="https://www.openstreetmap.org/export/embed.html?bbox=-125,24,-66,50&layer=mapnik" loading="lazy"></iframe></div>`;
+}
+
+function renderStoreApp(root) {
+  var cards = [
+    { name: "Clock", id: "clock", desc: "Alarms vibes · stopwatch · timer" },
+    { name: "Paint", id: "paint", desc: "Draw and save to Pictures" },
+    { name: "Photos", id: "photos", desc: "Gallery from your Files" },
+    { name: "To Do", id: "todo", desc: "Tasks that stick around" },
+    { name: "Weather", id: "weather", desc: "Live temperatures" },
+    { name: "Maps", id: "maps", desc: "OpenStreetMap explorer" },
+    { name: "Games", id: "games", desc: "Huge unblocked library" },
+    { name: "Mount Imagine", id: "imagine", desc: "Image generator" }
+  ];
+  root.innerHTML = `<div class="store-app"><h3>Mount Store</h3><p class="sub">Featured apps for Mount OS</p><div class="store-grid" id="st-grid"></div></div>`;
+  var g = root.querySelector("#st-grid");
+  cards.forEach(function (c) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "store-card";
+    b.innerHTML = "<b></b><span></span>";
+    b.querySelector("b").textContent = c.name;
+    b.querySelector("span").textContent = c.desc;
+    b.onclick = function () { openApp(c.id); };
+    g.appendChild(b);
+  });
+}
+
+function renderTaskMgr(root) {
+  function paint() {
+    var rows = "";
+    openWins.forEach(function (win, id) {
+      var app = APPS.find(function (a) { return a.id === id; });
+      rows += `<tr><td>${app ? app.name : id}</td><td>${id}</td><td><button type="button" data-kill="${id}">End task</button></td></tr>`;
+    });
+    root.innerHTML = `<div class="taskmgr">
+      <div class="taskmgr-head">Processes</div>
+      <table><thead><tr><th>Name</th><th>ID</th><th></th></tr></thead><tbody>${rows || "<tr><td colspan=3>No apps open</td></tr>"}</tbody></table>
+      <div class="taskmgr-stats">CPU ${(20+Math.random()*30).toFixed(0)}% · Mem ${(40+Math.random()*20).toFixed(0)}%</div>
+    </div>`;
+    root.querySelectorAll("[data-kill]").forEach(function (b) {
+      b.onclick = function () { closeWin(b.getAttribute("data-kill")); setTimeout(paint, 200); };
+    });
+  }
+  paint();
+  root._tmIv = setInterval(paint, 2000);
+}
+
+/* ===== Mount OS power-ups (surprise pack) ===== */
+(function () {
+  // Toasts
+  window.mountToast = function (msg) {
+    var stack = document.getElementById("toast-stack");
+    if (!stack) return;
+    var t = document.createElement("div");
+    t.className = "mount-toast";
+    t.textContent = msg;
+    stack.appendChild(t);
+    setTimeout(function () { t.classList.add("show"); }, 10);
+    setTimeout(function () {
+      t.classList.remove("show");
+      setTimeout(function () { t.remove(); }, 280);
+    }, 2800);
+  };
+  window.mountAchievement = function (count) {
+    if (count === 1) mountToast("Achievement: First game launched");
+    else if (count === 5) mountToast("Achievement: On a roll (5 plays)");
+    else if (count === 25) mountToast("Achievement: Arcade regular");
+    else if (count === 100) mountToast("Achievement: Century club");
+  };
+
+  // Volume tray — controls bg-music for real
+  function setupVolume() {
+    var audio = document.getElementById("bg-music");
+    var btn = document.getElementById("tb-vol");
+    var panel = document.getElementById("vol-panel");
+    var slider = document.getElementById("vol-slider");
+    var mute = document.getElementById("vol-mute");
+    var pct = document.getElementById("vol-pct");
+    if (!btn || !audio) return;
+
+    var vol = 0.45;
+    try {
+      var saved = localStorage.getItem("mount_vol");
+      if (saved != null && !isNaN(parseFloat(saved))) vol = Math.max(0, Math.min(1, parseFloat(saved)));
+    } catch (e) {}
+
+    function applyVol() {
+      audio.volume = Math.max(0, Math.min(1, vol));
+      if (slider) slider.value = String(Math.round(vol * 100));
+      if (pct) pct.textContent = Math.round(vol * 100) + "%";
+      try { localStorage.setItem("mount_vol", String(vol)); } catch (e) {}
+      // keep playing on desktop if policy allows
+      if (!audio.muted && audio.paused && window.updateBgMusic) window.updateBgMusic();
+    }
+    applyVol();
+
+    btn.onclick = function (e) {
+      e.stopPropagation();
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+    };
+    if (panel) {
+      panel.addEventListener("click", function (e) { e.stopPropagation(); });
+    }
+    if (slider) {
+      slider.addEventListener("input", function () {
+        vol = parseInt(slider.value, 10) / 100;
+        if (audio.muted && vol > 0) {
+          audio.muted = false;
+          if (mute) mute.textContent = "Mute";
+        }
+        applyVol();
+      });
+      slider.addEventListener("change", function () {
+        vol = parseInt(slider.value, 10) / 100;
+        applyVol();
+      });
+    }
+    if (mute) {
+      mute.onclick = function (e) {
+        e.stopPropagation();
+        audio.muted = !audio.muted;
+        mute.textContent = audio.muted ? "Unmute" : "Mute";
+        mountToast(audio.muted ? "Music muted" : "Music on");
+      };
+    }
+    document.addEventListener("click", function (e) {
+      if (panel && !panel.hidden && !e.target.closest("#vol-panel") && !e.target.closest("#tb-vol")) {
+        panel.hidden = true;
+      }
+    });
+  }
+
+
+  // Start menu search
+  function setupStartSearch() {
+    var input = document.getElementById("start-search");
+    if (!input) return;
+    input.addEventListener("input", function () {
+      var q = (input.value || "").trim().toLowerCase();
+      document.querySelectorAll("#pinned .start-app").forEach(function (el) {
+        var name = (el.textContent || "").toLowerCase();
+        el.style.display = !q || name.indexOf(q) >= 0 ? "" : "none";
+      });
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        var q = (input.value || "").trim().toLowerCase();
+        var app = APPS.find(function (a) { return a.name.toLowerCase().indexOf(q) >= 0 || a.id === q; });
+        if (app) { closeStart(); openApp(app.id); input.value = ""; }
+        else if (q === "games" || q === "game") { closeStart(); openApp("games"); }
+      }
+    });
+  }
+
+  // Alt+Tab
+  var altTab = document.getElementById("alttab");
+  var altHold = false;
+  var altIdx = 0;
+  function paintAltTab() {
+    if (!altTab) return;
+    var ids = Array.from(openWins.keys());
+    if (!ids.length) { altTab.hidden = true; return; }
+    altTab.hidden = false;
+    altTab.innerHTML = "";
+    ids.forEach(function (id, i) {
+      var app = APPS.find(function (a) { return a.id === id; });
+      var b = document.createElement("div");
+      b.className = "alttab-item" + (i === altIdx % ids.length ? " active" : "");
+      b.textContent = app ? app.name : id;
+      altTab.appendChild(b);
+    });
+  }
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "Tab" && e.altKey) {
+      e.preventDefault();
+      var ids = Array.from(openWins.keys());
+      if (!ids.length) return;
+      if (!altHold) { altHold = true; altIdx = 0; }
+      else altIdx++;
+      paintAltTab();
+    }
+    // Snap
+    if (e.metaKey || e.ctrlKey) {
+      // no-op for meta alone
+    }
+    if (e.key === "ArrowLeft" && (e.metaKey || e.key === "ArrowLeft" && e.altKey && e.shiftKey)) {
+      // handled below
+    }
+    // Ctrl+W close active
+    if (e.key === "w" && e.ctrlKey && !e.altKey) {
+      var active = document.querySelector(".window.active");
+      if (active && active.dataset.id) {
+        e.preventDefault();
+        closeWin(active.dataset.id);
+      }
+    }
+    // Ctrl+Shift+Esc joke task manager -> terminal
+    if (e.key === "Escape" && e.ctrlKey && e.shiftKey) {
+      openApp("terminal");
+      mountToast("Task Manager → Terminal");
+    }
+  });
+  window.addEventListener("keyup", function (e) {
+    if (e.key === "Alt" && altHold) {
+      altHold = false;
+      var ids = Array.from(openWins.keys());
+      if (ids.length) {
+        var id = ids[altIdx % ids.length];
+        var win = openWins.get(id);
+        if (win) focusWin(win);
+      }
+      if (altTab) altTab.hidden = true;
+    }
+  });
+
+  // Window snap with Win/Ctrl+Shift+Arrow or double-click already max
+  window.addEventListener("keydown", function (e) {
+    var win = document.querySelector(".window.active");
+    if (!win) return;
+    if (!(e.shiftKey && (e.ctrlKey || e.metaKey))) return;
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    win.classList.remove("maximized");
+    var tb = 48;
+    if (e.key === "ArrowUp") {
+      win.classList.add("maximized");
+      return;
+    }
+    win.style.top = "8px";
+    win.style.height = (window.innerHeight - tb - 16) + "px";
+    win.style.width = Math.floor(window.innerWidth / 2 - 12) + "px";
+    win.style.left = e.key === "ArrowLeft" ? "8px" : Math.floor(window.innerWidth / 2 + 4) + "px";
+    mountToast(e.key === "ArrowLeft" ? "Snapped left" : "Snapped right");
+  });
+
+  // Run dialog Ctrl+R
+  var runDlg = document.getElementById("run-dialog");
+  var runInput = document.getElementById("run-input");
+  function openRun() {
+    if (!runDlg) return;
+    runDlg.hidden = false;
+    if (runInput) { runInput.value = ""; runInput.focus(); }
+  }
+  function closeRun() { if (runDlg) runDlg.hidden = true; }
+  function execRun() {
+    var q = ((runInput && runInput.value) || "").trim().toLowerCase();
+    closeRun();
+    if (!q) return;
+    var app = APPS.find(function (a) { return a.id === q || a.name.toLowerCase() === q || a.name.toLowerCase().indexOf(q) === 0; });
+    if (app) openApp(app.id);
+    else if (q === "cmd" || q === "powershell") openApp("terminal");
+    else if (q === "explorer") openApp("files");
+    else mountToast("Cannot find '" + q + "'");
+  }
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "r" && e.ctrlKey && !e.altKey && !e.shiftKey) {
+      // don't steal browser refresh if not in session
+      var sess = document.getElementById("session");
+      if (sess && sess.classList.contains("active")) {
+        e.preventDefault();
+        openRun();
+      }
+    }
+    if (e.key === "Escape") closeRun();
+  });
+  var rok = document.getElementById("run-ok");
+  var rc = document.getElementById("run-cancel");
+  if (rok) rok.onclick = execRun;
+  if (rc) rc.onclick = closeRun;
+  if (runInput) runInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") execRun();
+  });
+
+  function addRecycleBin() {}
+
+  // Richer desktop context menu
+  var wallpaper = document.getElementById("wallpaper");
+  if (wallpaper) {
+    wallpaper.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+      var ctx = document.getElementById("ctx");
+      if (!ctx) return;
+      ctx.innerHTML = '<button type="button" data-act="refresh">Refresh</button>' +
+        '<button type="button" data-act="files">File Explorer</button>' +
+        '<button type="button" data-act="notes">New note</button>' +
+        '<button type="button" data-act="games">Games</button>' +
+        '<hr><button type="button" data-act="settings">Settings</button>' +
+        '<button type="button" data-act="wall">Next wallpaper</button>' +
+        '<button type="button" data-act="lock">Lock</button>';
+      ctx.style.left = Math.min(e.clientX, innerWidth - 210) + "px";
+      ctx.style.top = Math.min(e.clientY, innerHeight - 220) + "px";
+      ctx.classList.add("open");
+      ctx.onclick = function (ev) {
+        var a = ev.target.getAttribute("data-act");
+        ctx.classList.remove("open");
+        if (a === "refresh") { renderDesktop();  mountToast("Desktop refreshed"); }
+        if (a === "files") openApp("files");
+        if (a === "notes") openApp("notes");
+        if (a === "games") openApp("games");
+        if (a === "settings") openApp("settings");
+        if (a === "lock") lockSession();
+        if (a === "wall") {
+          try {
+            var ids = WALLPAPER_CATALOG.map(function (w) { return w.id; });
+            var cur = (state.settings && state.settings.wallpaper) || "animated";
+            var i = ids.indexOf(cur);
+            var next = ids[(i + 1) % ids.length];
+            state.settings.wallpaper = next;
+            save();
+            applyWallpaper();
+            mountToast("Wallpaper: " + (WALLPAPER_CATALOG.find(function (w) { return w.id === next; }) || {}).name);
+          } catch (err) {}
+        }
+      };
+    });
+  }
+
+  // Lock screen rotating tips
+  var tips = [
+    "Press Ctrl+R for Run",
+    "Alt+Tab switches apps",
+    "Ctrl+Shift+Arrow snaps windows",
+    "Click a game title while playing to favorite it",
+    "Settings → Personalization for wallpapers",
+    "Terminal supports NEOFETCH and DIR"
+  ];
+  function rotateTip() {
+    var hint = document.getElementById("lock-hint");
+    if (!hint) return;
+    hint.textContent = tips[Math.floor(Math.random() * tips.length)];
+  }
+  setInterval(rotateTip, 8000);
+  rotateTip();
+
+  // Welcome on session
+  var _enter = window.enterSession || enterSession;
+  // hook after login via MutationObserver on session class
+  var sess = document.getElementById("session");
+  if (sess) {
+    var obs = new MutationObserver(function () {
+      if (sess.classList.contains("active")) {
+        setTimeout(function () {
+          
+          if (!sessionStorage.getItem("mount_welcomed")) {
+            sessionStorage.setItem("mount_welcomed", "1");
+            mountToast("Welcome to Mount OS");
+          }
+        }, 400);
+      }
+    });
+    obs.observe(sess, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  setupVolume();
+  setupStartSearch();
+  
+
+  // Konami → party mode
+  var seq = [];
+  var konami = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+  window.addEventListener("keydown", function (e) {
+    seq.push(e.key);
+    if (seq.length > konami.length) seq.shift();
+    if (konami.every(function (k, i) { return seq[i] === k; })) {
+      document.body.classList.toggle("party");
+      mountToast(document.body.classList.contains("party") ? "Party mode" : "Party over");
+      seq = [];
+    }
+  });
+})();
+
+
+/* ===== Mega pack ===== */
+(function () {
+
+  // Action center — real controls
+  if (!document.getElementById("action-center")) {
+    var ac = document.createElement("div");
+    ac.id = "action-center";
+    ac.hidden = true;
+    ac.innerHTML = `
+      <div class="ac-title">Quick settings</div>
+      <div class="ac-grid">
+        <button type="button" data-ac="night" title="Warm screen tint">Night light</button>
+        <button type="button" data-ac="widget" title="Desktop clock">Desktop clock</button>
+        <button type="button" data-ac="motion" title="Fewer animations">Reduce motion</button>
+        <button type="button" data-ac="mute" title="Mute background music">Mute music</button>
+        <button type="button" data-ac="notif" title="Open notifications">Notifications</button>
+        <button type="button" data-ac="settings" title="Open Settings">Settings</button>
+      </div>
+      <div class="ac-sliders">
+        <label>Brightness <span id="ac-bright-val">100%</span></label>
+        <input type="range" id="ac-bright" min="55" max="100" value="100" />
+        <label>Music volume <span id="ac-vol-val">45%</span></label>
+        <input type="range" id="ac-vol" min="0" max="100" value="45" />
+      </div>
+      <div class="ac-actions">
+        <button type="button" id="ac-lock">Lock</button>
+        <button type="button" id="ac-refresh">Refresh desktop</button>
+      </div>`;
+    document.body.appendChild(ac);
+
+    function syncAc() {
+      var night = document.body.classList.contains("night-light");
+      var widgetOn = !document.body.classList.contains("hide-widgets");
+      var motion = !!(state.settings && state.settings.reducedMotion);
+      var audio = document.getElementById("bg-music");
+      ac.querySelector('[data-ac="night"]').classList.toggle("on", night);
+      ac.querySelector('[data-ac="widget"]').classList.toggle("on", widgetOn);
+      ac.querySelector('[data-ac="motion"]').classList.toggle("on", motion);
+      ac.querySelector('[data-ac="mute"]').classList.toggle("on", !!(audio && audio.muted));
+      var br = ac.querySelector("#ac-bright");
+      var bv = ac.querySelector("#ac-bright-val");
+      if (br && bv) bv.textContent = br.value + "%";
+      var vr = ac.querySelector("#ac-vol");
+      var vv = ac.querySelector("#ac-vol-val");
+      if (audio && vr) {
+        try {
+          var sv = localStorage.getItem("mount_vol");
+          if (sv != null) audio.volume = Math.max(0, Math.min(1, parseFloat(sv)));
+        } catch (e) {}
+        vr.value = String(Math.round((audio.volume || 0) * 100));
+        if (vv) vv.textContent = vr.value + "%";
+      }
+    }
+
+    var clock = document.getElementById("tb-clock");
+    if (clock) {
+      clock.style.cursor = "pointer";
+      clock.onclick = function (e) {
+        e.stopPropagation();
+        ac.hidden = !ac.hidden;
+        if (!ac.hidden) syncAc();
+      };
+    }
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest("#action-center") && !e.target.closest("#tb-clock")) ac.hidden = true;
+    });
+
+    ac.querySelector('[data-ac="night"]').onclick = function () {
+      document.body.classList.toggle("night-light");
+      try { localStorage.setItem("mount_night", document.body.classList.contains("night-light") ? "1" : "0"); } catch (e) {}
+      syncAc();
+      if (window.mountToast) mountToast(document.body.classList.contains("night-light") ? "Night light on" : "Night light off");
+    };
+    ac.querySelector('[data-ac="widget"]').onclick = function () {
+      document.body.classList.toggle("hide-widgets");
+      try { localStorage.setItem("mount_hide_widgets", document.body.classList.contains("hide-widgets") ? "1" : "0"); } catch (e) {}
+      syncAc();
+    };
+    ac.querySelector('[data-ac="motion"]').onclick = function () {
+      if (!state.settings) state.settings = {};
+      state.settings.reducedMotion = !state.settings.reducedMotion;
+      document.body.classList.toggle("reduced-motion", !!state.settings.reducedMotion);
+      save();
+      syncAc();
+      if (window.mountToast) mountToast(state.settings.reducedMotion ? "Animations reduced" : "Animations on");
+    };
+    ac.querySelector('[data-ac="mute"]').onclick = function () {
+      var audio = document.getElementById("bg-music");
+      if (!audio) return;
+      audio.muted = !audio.muted;
+      var muteBtn = document.getElementById("vol-mute");
+      if (muteBtn) muteBtn.textContent = audio.muted ? "Unmute" : "Mute";
+      syncAc();
+      if (window.mountToast) mountToast(audio.muted ? "Music muted" : "Music on");
+    };
+    ac.querySelector('[data-ac="notif"]').onclick = function () {
+      ac.hidden = true;
+      var panel = document.getElementById("notif-panel");
+      if (panel) panel.hidden = false;
+    };
+    ac.querySelector('[data-ac="settings"]').onclick = function () {
+      ac.hidden = true;
+      openApp("settings");
+    };
+    ac.querySelector("#ac-lock").onclick = function () { ac.hidden = true; lockSession(); };
+    ac.querySelector("#ac-refresh").onclick = function () {
+      renderDesktop();
+      if (window.mountToast) mountToast("Desktop refreshed");
+    };
+    var br = ac.querySelector("#ac-bright");
+    if (br) {
+      try {
+        var bs = localStorage.getItem("mount_bright");
+        if (bs) br.value = bs;
+      } catch (e) {}
+      document.documentElement.style.setProperty("--mount-bright", (parseInt(br.value, 10) / 100).toFixed(2));
+      br.oninput = function () {
+        var v = parseInt(br.value, 10);
+        document.documentElement.style.setProperty("--mount-bright", (v / 100).toFixed(2));
+        try { localStorage.setItem("mount_bright", String(v)); } catch (e) {}
+        ac.querySelector("#ac-bright-val").textContent = v + "%";
+      };
+    }
+    var vr = ac.querySelector("#ac-vol");
+    if (vr) {
+      vr.oninput = function () {
+        var audio = document.getElementById("bg-music");
+        var vol = parseInt(vr.value, 10) / 100;
+        if (audio) {
+          audio.volume = vol;
+          if (vol > 0) audio.muted = false;
+        }
+        try { localStorage.setItem("mount_vol", String(vol)); } catch (e) {}
+        var slider = document.getElementById("vol-slider");
+        if (slider) slider.value = String(Math.round(vol * 100));
+        var pct = document.getElementById("vol-pct");
+        if (pct) pct.textContent = Math.round(vol * 100) + "%";
+        ac.querySelector("#ac-vol-val").textContent = Math.round(vol * 100) + "%";
+        syncAc();
+      };
+    }
+
+    try {
+      if (localStorage.getItem("mount_hide_widgets") === "1") document.body.classList.add("hide-widgets");
+      if (localStorage.getItem("mount_night") === "1") document.body.classList.add("night-light");
+      if (state.settings && state.settings.reducedMotion) document.body.classList.add("reduced-motion");
+    } catch (e) {}
+  }
+
+  // Spotlight Ctrl+K / Ctrl+Space
+  if (!document.getElementById("spotlight")) {
+    var sp = document.createElement("div");
+    sp.id = "spotlight";
+    sp.hidden = true;
+    sp.innerHTML = `<div class="sp-box"><input id="sp-in" placeholder="Search apps, games, settings…" autocomplete="off" /><div id="sp-res"></div></div>`;
+    document.body.appendChild(sp);
+    var spin = sp.querySelector("#sp-in");
+    var spres = sp.querySelector("#sp-res");
+    function openSp() { sp.hidden = false; spin.value = ""; spin.focus(); spres.innerHTML = ""; }
+    function closeSp() { sp.hidden = true; }
+    function runSp() {
+      var q = (spin.value || "").trim().toLowerCase();
+      spres.innerHTML = "";
+      if (!q) return;
+      var hits = APPS.filter(function (a) { return a.name.toLowerCase().indexOf(q) >= 0 || a.id.indexOf(q) >= 0; });
+      hits.slice(0, 8).forEach(function (a) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = a.name;
+        b.onclick = function () { closeSp(); openApp(a.id); };
+        spres.appendChild(b);
+      });
+      try {
+        var rec = JSON.parse(localStorage.getItem("mount_recent_games") || "[]");
+        rec.filter(function (n) { return n.toLowerCase().indexOf(q) >= 0; }).slice(0, 5).forEach(function (n) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.textContent = "🎮 " + n;
+          b.onclick = function () { closeSp(); openApp("games"); };
+          spres.appendChild(b);
+        });
+      } catch (e) {}
+    }
+    spin.addEventListener("input", runSp);
+    spin.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeSp();
+      if (e.key === "Enter") {
+        var first = spres.querySelector("button");
+        if (first) first.click();
+      }
+    });
+    window.addEventListener("keydown", function (e) {
+      if ((e.key === "k" && e.ctrlKey) || (e.code === "Space" && e.ctrlKey)) {
+        var sess = document.getElementById("session");
+        if (sess && sess.classList.contains("active")) { e.preventDefault(); openSp(); }
+      }
+      if (e.key === "Escape") closeSp();
+    });
+    sp.addEventListener("click", function (e) { if (e.target === sp) closeSp(); });
+  }
+
+  // Clipboard history (Ctrl+Shift+V)
+  var clipHist = [];
+  document.addEventListener("copy", function () {
+    try {
+      var sel = String(window.getSelection && window.getSelection());
+      if (sel && sel.trim()) {
+        clipHist.unshift(sel.trim().slice(0, 500));
+        clipHist = clipHist.slice(0, 12);
+      }
+    } catch (e) {}
+  });
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "v" && e.ctrlKey && e.shiftKey) {
+      e.preventDefault();
+      if (!clipHist.length) { if (window.mountToast) mountToast("Clipboard empty"); return; }
+      if (window.mountToast) mountToast("Clipboard: " + clipHist[0].slice(0, 40));
+    }
+  });
+
+  // Shake window to minimize others — track titlebar velocity lightly skip
+
+  // Desktop widget clock
+  if (!document.getElementById("desk-widget")) {
+    var w = document.createElement("div");
+    w.id = "desk-widget";
+    w.innerHTML = `<div class="dw-time" id="dw-t"></div><div class="dw-date" id="dw-d"></div>`;
+    var sess = document.getElementById("session");
+    if (sess) sess.appendChild(w);
+    setInterval(function () {
+      var n = new Date();
+      var t = document.getElementById("dw-t");
+      var d = document.getElementById("dw-d");
+      if (t) t.textContent = n.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+      if (d) d.textContent = n.toLocaleDateString([], {weekday:"short", month:"short", day:"numeric"});
+    }, 10000);
+    try {
+      var n = new Date();
+      setTimeout(function(){
+        var t = document.getElementById("dw-t");
+        var d = document.getElementById("dw-d");
+        if (t) t.textContent = n.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+        if (d) d.textContent = n.toLocaleDateString([], {weekday:"short", month:"short", day:"numeric"});
+      }, 0);
+    } catch(e){}
+  }
+
+  // Random game button in start — inject once
+  var pinned = document.getElementById("pinned");
+  if (pinned && !document.getElementById("btn-random-game")) {
+    var rb = document.createElement("button");
+    rb.type = "button";
+    rb.className = "start-app";
+    rb.id = "btn-random-game";
+    rb.innerHTML = `<div class="ico game-ico" style="background:#7c3aed">?</div><span>Random Game</span>`;
+    rb.onclick = function () {
+      closeStart();
+      openApp("games");
+      if (window.mountToast) mountToast("Open Games · pick from Recent or search");
+    };
+    pinned.appendChild(rb);
+  }
+
+  // Shutdown / restart from start user area
+  var lockBtn = document.getElementById("btn-lock");
+  if (lockBtn && !document.getElementById("btn-restart")) {
+    var rs = document.createElement("button");
+    rs.type = "button";
+    rs.id = "btn-restart";
+    rs.className = "start-power";
+    rs.textContent = "Restart";
+    rs.onclick = function () {
+      closeStart();
+      document.body.classList.add("shutting");
+      if (window.mountToast) mountToast("Restarting Mount OS…");
+      setTimeout(function () {
+        document.body.classList.remove("shutting");
+        lockSession();
+        location.reload();
+      }, 1200);
+    };
+    lockBtn.parentElement && lockBtn.parentElement.appendChild(rs);
+  }
+
+  // Click sound optional on buttons
+  var clickAudio = null;
+  try {
+    // tiny silent-ish beep via oscillator on demand
+  } catch (e) {}
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("button")) return;
+    try {
+      var ctx = window.__mountAudioCtx || (window.__mountAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.frequency.value = 880;
+      g.gain.value = 0.02;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.03);
+    } catch (err) {}
+  }, true);
+
+  // Games: sort / shuffle toolbar if library exists later via mutation — skip
+
+  // Persist night light
+  try {
+    if (localStorage.getItem("mount_night") === "1") document.body.classList.add("night-light");
+  } catch (e) {}
+  document.body.addEventListener("classChange", function () {});
+  var mo = new MutationObserver(function () {
+    try { localStorage.setItem("mount_night", document.body.classList.contains("night-light") ? "1" : "0"); } catch (e) {}
+  });
+  mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+  // F11 style maximize active window
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "F11") {
+      e.preventDefault();
+      var win = document.querySelector(".window.active");
+      if (win) win.classList.toggle("maximized");
+    }
+  });
+
+  // Double-tap start to open search focus
+  var bs = document.getElementById("btn-start");
+  if (bs) {
+    bs.addEventListener("dblclick", function () {
+      var s = document.getElementById("start-search");
+      if (s) { document.getElementById("start").classList.add("open"); s.focus(); }
+    });
+  }
+
+  if (window.mountToast) {
+    // silent
+  }
+})();
