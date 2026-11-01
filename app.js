@@ -32,7 +32,9 @@ const APPS = [
   { id: "calc", name: "Calculator", icon: "CALC", pinned: true, desktop: false },
   { id: "terminal", name: "Terminal", icon: "TERM", pinned: true, desktop: false },
   { id: "imagine", name: "Mount Imagine", icon: "IMAGINE", pinned: true, desktop: true },
-  { id: "clock", name: "Clock", icon: "CLOCK", pinned: true, desktop: true }
+  { id: "clock", name: "Clock", icon: "CLOCK", pinned: true, desktop: true },
+  { id: "minecraft", name: "Minecraft", icon: "MC", pinned: true, desktop: true },
+  { id: "chat", name: "Mount Chat", icon: "CHAT", pinned: true, desktop: true }
 ];
 
 
@@ -44,6 +46,8 @@ function appIconHTML(icon, size) {
   if (icon === "GEAR") return null; // handled with gearImg
   if (icon === "WEB") return `<div class="ico web-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>`;
   if (icon === "GAME") return `<div class="ico game-ico"><img src="${GAMES_ICON}" alt=""></div>`;
+  if (icon === "CHAT") return `<div class="ico chat-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M4 6h16v10H7l-3 3V6z"/></svg></div>`;
+  if (icon === "MC") return `<div class="ico mc-ico"><img src="${MC_ICON}" alt=""></div>`;
   if (icon === "CLOCK") return `<div class="ico clock-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>`;
   if (icon === "PAINT") return `<div class="ico paint-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><path d="M5 17l4-4 3 3 7-7"/><path d="M4 20h6"/><circle cx="18" cy="6" r="2"/></svg></div>`;
   if (icon === "PHOTOS") return `<div class="ico photos-ico"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></div>`;
@@ -71,6 +75,7 @@ const MOUNT_AI_URL = "https://blackhole-ai.weswoodland13.workers.dev";
 const MOUNT_IMAGINE_URL = MOUNT_AI_URL + "/api/image";
 
 const GAMES_ICON = "games-icon.png";
+const MC_ICON = "minecraft-icon.png";
 let GAMES_CATALOG = null;
 const GAMES_EMBEDDED = [{"id":"10-minutes-till-dawn","name":"10 Minutes Till Dawn","url":"https://class6x.gitlab.io/10-minutes-till-dawn/"},{"id":"11-11","name":"11 11","url":"https://class6x.gitlab.io/11-11/"},{"id":"12-mini-battles-2","name":"12 Mini Battles 2","url":"https://class6x.gitlab.io/12-mini-battles-2/"},{"id":"12-minibattles","name":"12 Minibattles","url":"https://class6x.gitlab.io/12-minibattles/"},{"id":"18-wheeler-cargo-simulator","name":"18 Wheeler Cargo Simulator","url":"https://class6x.gitlab.io/18-wheeler-cargo-simulator/"},{"id":"1v1-lol","name":"1v1 Lol","url":"https://class6x.gitlab.io/1v1-lol/"},{"id":"1v1-lol-offline","name":"1v1 Lol Offline","url":"https://class6x.gitlab.io/1v1-lol-offline/"},{"id":"2-minute-football","name":"2 Minute Football","url":"https://class6x.gitlab.io/2-minute-football/"},{"id":"2048","name":"2048","url":"https://class6x.gitlab.io/2048/"},{"id":"2048-multitask","name":"2048 Multitask","url":"https://class6x.gitlab.io/2048-multitask/"},{"id":"3d-car-simulator","name":"3d Car Simulator","url":"https://class6x.gitlab.io/3d-car-simulator/"},{"id":"3d-monster-truck-skyroads","name":"3d Monster Truck Skyroads","url":"https://class6x.gitlab.io/3d-monster-truck-skyroads/"},{"id":"3d-moto-simulator-2","name":"3d Moto Simulator 2","url":"https://class6x.gitlab.io/3d-moto-simulator-2/"},{"id":"4th-and-goal-2022","name":"4th And Goal 2022","url":"https://class6x.gitlab.io/4th-and-goal-2022/"},{"id":"4x4-drive-offroad","name":"4x4 Drive Offroad","url":"https://class6x.gitlab.io/4x4-drive-offroad/"},{"id":"8-ball-pool","name":"8 Ball Pool","url":"https://class6x.gitlab.io/8-ball-pool/"},{"id":"8bit-fiesta","name":"8bit Fiesta","url":"https://class6x.gitlab.io/8bit-fiesta/"},{"id":"9-ball-pool","name":"9 Ball Pool","url":"https://class6x.gitlab.io/9-ball-pool/"},{"id":"9-balls-pool","name":"9 Balls Pool","url":"https://class6x.gitlab.io/9-balls-pool/"},{"id":"a-dance-of-fire-and-ice","name":"A Dance Of Fire And Ice","url":"https://class6x.gitlab.io/a-dance-of-fire-and-ice/"},{"id":"a-pretty-odd-bunny","name":"A Pretty Odd Bunny","url":"https://class6x.gitlab.io/a-pretty-odd-bunny/"},{"id":"a-pretty-odd-bunny-roast-it","name":"A Pretty Odd Bunny Roast It","url":"https://class6x.gitlab.io/a-pretty-odd-bunny-roast-it/"},{"id":"a-small-world-cup","name":"A Small World Cup","url":"https://class6x.gitlab.io/a-small-world-cup/"},{"id":"adventure-drivers","name":"Adventure Drivers","url":"https://class6x.gitlab.io/adventure-drivers/"},{"id":"air-hockey-championship-deluxe","name":"Air Hockey Championship Deluxe","url":"https://class6x.gitlab.io/air-hockey-championship-deluxe/"},{"id":"aliens-nest","name":"Aliens Nest","url":"https://class6x.gitlab.io/aliens-nest/"},{"id":"amazing-bubble-breaker","name":"Amazing Bubble Breaker","url":"https://class6x.gitlab.io/amazing-bubble-breaker/"},{"id":"amazing-bubble-connect","name":"Amazing Bubble Connect","url":"https://class6x.gitlab.io/amazing-bubble-connect/"},{"id":"among-us","name":"Among Us","url":"https://class6x.gitlab.io/among-us/"},{"id":"animal-arena","name":"Animal Arena","url":"https://class6x.gitlab.io/animal-arena/"},{"id":"ape-sling","name":"Ape Sling","url":"https://class6x.gitlab.io/ape-sling/"},{"id":"aqua-thrills","name":"Aqua Thrills","url":"https://class6x.gitlab.io/aqua-thrills/"},{"id":"archer-master-3d-castle-defense","name":"Archer Master 3d Castle Defense","url":"https://class6x.gitlab.io/archer-master-3d-castle-defense/"},{"id":"archery-world-tour","name":"Archery World Tour","url":"https://class6x.gitlab.io/archery-world-tour/"},{"id":"arithmetica","name":"Arithmetica","url":"https://class6x.gitlab.io/arithmetica/"},{"id":"arrow-pathway","name":"Arrow Pathway","url":"https://class6x.gitlab.io/arrow-pathway/"},{"id":"athletics-hero","name":"Athletics Hero","url":"https://class6x.gitlab.io/athletics-hero/"},{"id":"avalanche","name":"Avalanche","url":"https://class6x.gitlab.io/avalanche/"},{"id":"b-cubed","name":"B Cubed","url":"https://class6x.gitlab.io/b-cubed/"},{"id":"bacon-may-die","name":"Bacon May Die","url":"https://class6x.gitlab.io/bacon-may-die/"},{"id":"bad-ice-cream-2","name":"Bad Ice Cream 2","url":"https://class6x.gitlab.io/bad-ice-cream-2/"},{"id":"bad-ice-cream-3","name":"Bad Ice Cream 3","url":"https://class6x.gitlab.io/bad-ice-cream-3/"},{"id":"barbershop-inc","name":"Barbershop Inc","url":"https://class6x.gitlab.io/barbershop-inc/"},{"id":"basket-and-ball","name":"Basket And Ball","url":"https://class6x.gitlab.io/basket-and-ball/"},{"id":"basket-bros","name":"Basket Bros","url":"https://class6x.gitlab.io/basket-bros/"},{"id":"basket-champs","name":"Basket Champs","url":"https://class6x.gitlab.io/basket-champs/"},{"id":"basket-random","name":"Basket Random","url":"https://class6x.gitlab.io/basket-random/"},{"id":"basket-swooshes","name":"Basket Swooshes","url":"https://class6x.gitlab.io/basket-swooshes/"},{"id":"basketball-frvr","name":"Basketball Frvr","url":"https://class6x.gitlab.io/basketball-frvr/"},{"id":"basketball-legends","name":"Basketball Legends","url":"https://class6x.gitlab.io/basketball-legends/"},{"id":"basketball-stars","name":"Basketball Stars","url":"https://class6x.gitlab.io/basketball-stars/"},{"id":"battle-golf","name":"Battle Golf","url":"https://class6x.gitlab.io/battle-golf/"},{"id":"battle-wheels","name":"Battle Wheels","url":"https://class6x.gitlab.io/battle-wheels/"},{"id":"bearsus","name":"Bearsus","url":"https://class6x.gitlab.io/bearsus/"},{"id":"become-a-dentist","name":"Become A Dentist","url":"https://class6x.gitlab.io/become-a-dentist/"},{"id":"become-a-puppy-groomer","name":"Become A Puppy Groomer","url":"https://class6x.gitlab.io/become-a-puppy-groomer/"},{"id":"big-shot-boxing","name":"Big Shot Boxing","url":"https://class6x.gitlab.io/big-shot-boxing/"},{"id":"big-tall-small","name":"Big Tall Small","url":"https://class6x.gitlab.io/big-tall-small/"},{"id":"bike-trials-offroad-1","name":"Bike Trials Offroad 1","url":"https://class6x.gitlab.io/bike-trials-offroad-1/"},{"id":"bike-trials-winter-1","name":"Bike Trials Winter 1","url":"https://class6x.gitlab.io/bike-trials-winter-1/"},{"id":"bike-trials-winter-2","name":"Bike Trials Winter 2","url":"https://class6x.gitlab.io/bike-trials-winter-2/"},{"id":"bird-jumper","name":"Bird Jumper","url":"https://class6x.gitlab.io/bird-jumper/"},{"id":"bitlife","name":"Bitlife","url":"https://class6x.gitlab.io/bitlife/"},{"id":"blob-drop","name":"Blob Drop","url":"https://class6x.gitlab.io/blob-drop/"},{"id":"block-the-pig","name":"Block The Pig","url":"https://class6x.gitlab.io/block-the-pig/"},{"id":"blockins","name":"Blockins","url":"https://class6x.gitlab.io/blockins/"},{"id":"blocky-cars","name":"Blocky Cars","url":"https://class6x.gitlab.io/blocky-cars/"},{"id":"blocky-trials","name":"Blocky Trials","url":"https://class6x.gitlab.io/blocky-trials/"},{"id":"blood-drift","name":"Blood Drift","url":"https://class6x.gitlab.io/blood-drift/"},{"id":"bloons-tower-defense-1","name":"Bloons Tower Defense 1","url":"https://class6x.gitlab.io/bloons-tower-defense-1/"},{"id":"blue","name":"Blue","url":"https://class6x.gitlab.io/blue/"},{"id":"blumgi-ball","name":"Blumgi Ball","url":"https://class6x.gitlab.io/blumgi-ball/"},{"id":"blumgi-bloom","name":"Blumgi Bloom","url":"https://class6x.gitlab.io/blumgi-bloom/"},{"id":"blumgi-castle","name":"Blumgi Castle","url":"https://class6x.gitlab.io/blumgi-castle/"},{"id":"blumgi-dragon","name":"Blumgi Dragon","url":"https://class6x.gitlab.io/blumgi-dragon/"},{"id":"blumgi-rocket","name":"Blumgi Rocket","url":"https://class6x.gitlab.io/blumgi-rocket/"},{"id":"blumgi-slime","name":"Blumgi Slime","url":"https://class6x.gitlab.io/blumgi-slime/"},{"id":"bob-the-robber-4","name":"Bob The Robber 4","url":"https://class6x.gitlab.io/bob-the-robber-4/"},{"id":"bomber-royale","name":"Bomber Royale","url":"https://class6x.gitlab.io/bomber-royale/"},{"id":"bottle-flip","name":"Bottle Flip","url":"https://class6x.gitlab.io/bottle-flip/"},{"id":"bouncy-basketball","name":"Bouncy Basketball","url":"https://class6x.gitlab.io/bouncy-basketball/"},{"id":"bowling-stars","name":"Bowling Stars","url":"https://class6x.gitlab.io/bowling-stars/"},{"id":"boxing-physics-2","name":"Boxing Physics 2","url":"https://class6x.gitlab.io/boxing-physics-2/"},{"id":"boxing-random","name":"Boxing Random","url":"https://class6x.gitlab.io/boxing-random/"},{"id":"boxrob","name":"Boxrob","url":"https://class6x.gitlab.io/boxrob/"},{"id":"boxrob-2","name":"Boxrob 2","url":"https://class6x.gitlab.io/boxrob-2/"},{"id":"boxrob-3","name":"Boxrob 3","url":"https://class6x.gitlab.io/boxrob-3/"},{"id":"brain-test-2-tricky-stories","name":"Brain Test 2 Tricky Stories","url":"https://class6x.gitlab.io/brain-test-2-tricky-stories/"},{"id":"brain-test-3-tricky-quests","name":"Brain Test 3 Tricky Quests","url":"https://class6x.gitlab.io/brain-test-3-tricky-quests/"},{"id":"brain-test-4-tricky-friends","name":"Brain Test 4 Tricky Friends","url":"https://class6x.gitlab.io/brain-test-4-tricky-friends/"},{"id":"brain-test-tricky-puzzles","name":"Brain Test Tricky Puzzles","url":"https://class6x.gitlab.io/brain-test-tricky-puzzles/"},{"id":"breaking-the-bank","name":"Breaking The Bank","url":"https://class6x.gitlab.io/breaking-the-bank/"},{"id":"bubble-shooter","name":"Bubble Shooter","url":"https://class6x.gitlab.io/bubble-shooter/"},{"id":"bullet-bro","name":"Bullet Bro","url":"https://class6x.gitlab.io/bullet-bro/"},{"id":"bullet-bros","name":"Bullet Bros","url":"https://class6x.gitlab.io/bullet-bros/"},{"id":"bullet-force","name":"Bullet Force","url":"https://class6x.gitlab.io/bullet-force/"},{"id":"bumper-cars-soccer","name":"Bumper Cars Soccer","url":"https://class6x.gitlab.io/bumper-cars-soccer/"},{"id":"bumpy-jumpy","name":"Bumpy Jumpy","url":"https://class6x.gitlab.io/bumpy-jumpy/"},{"id":"burger-bounty","name":"Burger Bounty","url":"https://class6x.gitlab.io/burger-bounty/"},{"id":"burnin-rubber-5-xs","name":"Burnin Rubber 5 Xs","url":"https://class6x.gitlab.io/burnin-rubber-5-xs/"},{"id":"burnin-rubber-crash-n-burn","name":"Burnin Rubber Crash N Burn","url":"https://class6x.gitlab.io/burnin-rubber-crash-n-burn/"},{"id":"burnout-drift-seaport-max","name":"Burnout Drift Seaport Max","url":"https://class6x.gitlab.io/burnout-drift-seaport-max/"},{"id":"burnout-extreme-drift-2","name":"Burnout Extreme Drift 2","url":"https://class6x.gitlab.io/burnout-extreme-drift-2/"},{"id":"burrito-bison","name":"Burrito Bison","url":"https://class6x.gitlab.io/burrito-bison/"},{"id":"candy-jump","name":"Candy Jump","url":"https://class6x.gitlab.io/candy-jump/"},{"id":"car-climb-racing","name":"Car Climb Racing","url":"https://class6x.gitlab.io/car-climb-racing/"},{"id":"car-drift-racers-2","name":"Car Drift Racers 2","url":"https://class6x.gitlab.io/car-drift-racers-2/"},{"id":"car-eats-car-winter-adventure","name":"Car Eats Car Winter Adventure","url":"https://class6x.gitlab.io/car-eats-car-winter-adventure/"},{"id":"car-simulator-arena","name":"Car Simulator Arena","url":"https://class6x.gitlab.io/car-simulator-arena/"},{"id":"cars-thief","name":"Cars Thief","url":"https://class6x.gitlab.io/cars-thief/"},{"id":"cars-thief-tank-edition","name":"Cars Thief Tank Edition","url":"https://class6x.gitlab.io/cars-thief-tank-edition/"},{"id":"castle-of-chaos","name":"Castle Of Chaos","url":"https://class6x.gitlab.io/castle-of-chaos/"},{"id":"casual-chess","name":"Casual Chess","url":"https://class6x.gitlab.io/casual-chess/"},{"id":"cat-gunner-super-zombie-shoot","name":"Cat Gunner Super Zombie Shoot","url":"https://class6x.gitlab.io/cat-gunner-super-zombie-shoot/"},{"id":"cat-trap","name":"Cat Trap","url":"https://class6x.gitlab.io/cat-trap/"},{"id":"catpad","name":"Catpad","url":"https://class6x.gitlab.io/catpad/"},{"id":"cats","name":"Cats","url":"https://class6x.gitlab.io/cats/"},{"id":"cats-love-cake","name":"Cats Love Cake","url":"https://class6x.gitlab.io/cats-love-cake/"},{"id":"cats-love-cake-2","name":"Cats Love Cake 2","url":"https://class6x.gitlab.io/cats-love-cake-2/"},{"id":"cave-blast","name":"Cave Blast","url":"https://class6x.gitlab.io/cave-blast/"},{"id":"chess-grandmaster","name":"Chess Grandmaster","url":"https://class6x.gitlab.io/chess-grandmaster/"},{"id":"chicken-sword-ninja-master","name":"Chicken Sword Ninja Master","url":"https://class6x.gitlab.io/chicken-sword-ninja-master/"},{"id":"circloo-2","name":"Circloo 2","url":"https://class6x.gitlab.io/circloo-2/"},{"id":"city-bike-stunt-2","name":"City Bike Stunt 2","url":"https://class6x.gitlab.io/city-bike-stunt-2/"},{"id":"city-car-driving-stunt-master","name":"City Car Driving Stunt Master","url":"https://class6x.gitlab.io/city-car-driving-stunt-master/"},{"id":"city-rider","name":"City Rider","url":"https://class6x.gitlab.io/city-rider/"},{"id":"clash-of-tanks","name":"Clash Of Tanks","url":"https://class6x.gitlab.io/clash-of-tanks/"},{"id":"cluster-rush","name":"Cluster Rush","url":"https://class6x.gitlab.io/cluster-rush/"},{"id":"color-switch","name":"Color Switch","url":"https://class6x.gitlab.io/color-switch/"},{"id":"color-tunnel-2","name":"Color Tunnel 2","url":"https://class6x.gitlab.io/color-tunnel-2/"},{"id":"colorup","name":"Colorup","url":"https://class6x.gitlab.io/colorup/"},{"id":"connect-248","name":"Connect 248","url":"https://class6x.gitlab.io/connect-248/"},{"id":"cookie-clicker","name":"Cookie Clicker","url":"https://class6x.gitlab.io/cookie-clicker/"},{"id":"cooking-fast","name":"Cooking Fast","url":"https://class6x.gitlab.io/cooking-fast/"},{"id":"cosmos-lines","name":"Cosmos Lines","url":"https://class6x.gitlab.io/cosmos-lines/"},{"id":"court-kings-3d","name":"Court Kings 3d","url":"https://class6x.gitlab.io/court-kings-3d/"},{"id":"cozy-room-design","name":"Cozy Room Design","url":"https://class6x.gitlab.io/cozy-room-design/"},{"id":"crazy-bikes","name":"Crazy Bikes","url":"https://class6x.gitlab.io/crazy-bikes/"},{"id":"crazy-cars","name":"Crazy Cars","url":"https://class6x.gitlab.io/crazy-cars/"},{"id":"crazy-tunnel-3d","name":"Crazy Tunnel 3d","url":"https://class6x.gitlab.io/crazy-tunnel-3d/"},{"id":"cricket-world-cup","name":"Cricket World Cup","url":"https://class6x.gitlab.io/cricket-world-cup/"},{"id":"crossy-road","name":"Crossy Road","url":"https://class6x.gitlab.io/crossy-road/"},{"id":"crown-guard","name":"Crown Guard","url":"https://class6x.gitlab.io/crown-guard/"},{"id":"cubes-king","name":"Cubes King","url":"https://class6x.gitlab.io/cubes-king/"},{"id":"cubinko","name":"Cubinko","url":"https://class6x.gitlab.io/cubinko/"},{"id":"curve-ball-3d","name":"Curve Ball 3d","url":"https://class6x.gitlab.io/curve-ball-3d/"},{"id":"cyber-cars-punk-racing","name":"Cyber Cars Punk Racing","url":"https://class6x.gitlab.io/cyber-cars-punk-racing/"},{"id":"daddy-long-legs","name":"Daddy Long Legs","url":"https://class6x.gitlab.io/daddy-long-legs/"},{"id":"dadish","name":"Dadish","url":"https://class6x.gitlab.io/dadish/"},{"id":"dadish-3d","name":"Dadish 3d","url":"https://class6x.gitlab.io/dadish-3d/"},{"id":"dana-relics-for-sale","name":"Dana Relics For Sale","url":"https://class6x.gitlab.io/dana-relics-for-sale/"},{"id":"dead-paradise-race-shooter","name":"Dead Paradise Race Shooter","url":"https://class6x.gitlab.io/dead-paradise-race-shooter/"},{"id":"death-chase","name":"Death Chase","url":"https://class6x.gitlab.io/death-chase/"},{"id":"death-run-3d","name":"Death Run 3d","url":"https://class6x.gitlab.io/death-run-3d/"},{"id":"deepest-sword","name":"Deepest Sword","url":"https://class6x.gitlab.io/deepest-sword/"},{"id":"deer-simulator","name":"Deer Simulator","url":"https://class6x.gitlab.io/deer-simulator/"},{"id":"demolition-derby-crash-racing","name":"Demolition Derby Crash Racing","url":"https://class6x.gitlab.io/demolition-derby-crash-racing/"},{"id":"descent","name":"Descent","url":"https://class6x.gitlab.io/descent/"},{"id":"detective-dan","name":"Detective Dan","url":"https://class6x.gitlab.io/detective-dan/"},{"id":"digging-master","name":"Digging Master","url":"https://class6x.gitlab.io/digging-master/"},{"id":"dinosaur-game","name":"Dinosaur Game","url":"https://class6x.gitlab.io/dinosaur-game/"},{"id":"doctor-hero","name":"Doctor Hero","url":"https://class6x.gitlab.io/doctor-hero/"},{"id":"doge-miner","name":"Doge Miner","url":"https://class6x.gitlab.io/doge-miner/"},{"id":"double-panda","name":"Double Panda","url":"https://class6x.gitlab.io/double-panda/"},{"id":"dragon-simulator-3d","name":"Dragon Simulator 3d","url":"https://class6x.gitlab.io/dragon-simulator-3d/"},{"id":"draw-the-hill","name":"Draw The Hill","url":"https://class6x.gitlab.io/draw-the-hill/"},{"id":"dreadhead-parkour","name":"Dreadhead Parkour","url":"https://class6x.gitlab.io/dreadhead-parkour/"},{"id":"drift-boss","name":"Drift Boss","url":"https://class6x.gitlab.io/drift-boss/"},{"id":"drift-hunters","name":"Drift Hunters","url":"https://class6x.gitlab.io/drift-hunters/"},{"id":"driftwave","name":"Driftwave","url":"https://class6x.gitlab.io/driftwave/"},{"id":"drive-mad","name":"Drive Mad","url":"https://class6x.gitlab.io/drive-mad/"},{"id":"drunken-duel","name":"Drunken Duel","url":"https://class6x.gitlab.io/drunken-duel/"},{"id":"dubai-police-parking-2","name":"Dubai Police Parking 2","url":"https://class6x.gitlab.io/dubai-police-parking-2/"},{"id":"ducklingsio","name":"Ducklingsio","url":"https://class6x.gitlab.io/ducklingsio/"},{"id":"dunk-perfect","name":"Dunk Perfect","url":"https://class6x.gitlab.io/dunk-perfect/"},{"id":"dunkbrush","name":"Dunkbrush","url":"https://class6x.gitlab.io/dunkbrush/"},{"id":"dunkers","name":"Dunkers","url":"https://class6x.gitlab.io/dunkers/"},{"id":"duo-survival","name":"Duo Survival","url":"https://class6x.gitlab.io/duo-survival/"},{"id":"duo-survival-3","name":"Duo Survival 3","url":"https://class6x.gitlab.io/duo-survival-3/"},{"id":"duo-vikings-2","name":"Duo Vikings 2","url":"https://class6x.gitlab.io/duo-vikings-2/"},{"id":"duo-vikings-3","name":"Duo Vikings 3","url":"https://class6x.gitlab.io/duo-vikings-3/"},{"id":"dyna-boy","name":"Dyna Boy","url":"https://class6x.gitlab.io/dyna-boy/"},{"id":"earn-to-die","name":"Earn To Die","url":"https://class6x.gitlab.io/earn-to-die/"},{"id":"eggbot-vs-zombies","name":"Eggbot Vs Zombies","url":"https://class6x.gitlab.io/eggbot-vs-zombies/"},{"id":"eggy-car","name":"Eggy Car","url":"https://class6x.gitlab.io/eggy-car/"},{"id":"elastic-man","name":"Elastic Man","url":"https://class6x.gitlab.io/elastic-man/"},{"id":"electron-dash","name":"Electron Dash","url":"https://class6x.gitlab.io/electron-dash/"},{"id":"element-bblocks","name":"Element Bblocks","url":"https://class6x.gitlab.io/element-bblocks/"},{"id":"element-blocks","name":"Element Blocks","url":"https://class6x.gitlab.io/element-blocks/"},{"id":"eliza-mall-mania","name":"Eliza Mall Mania","url":"https://class6x.gitlab.io/eliza-mall-mania/"},{"id":"energy","name":"Energy","url":"https://class6x.gitlab.io/energy/"},{"id":"escaping-the-prison","name":"Escaping The Prison","url":"https://class6x.gitlab.io/escaping-the-prison/"},{"id":"eugenes-life","name":"Eugenes Life","url":"https://class6x.gitlab.io/eugenes-life/"},{"id":"extreme-car-driving-simulator","name":"Extreme Car Driving Simulator","url":"https://class6x.gitlab.io/extreme-car-driving-simulator/"},{"id":"extreme-off-road-cars-3-cargo","name":"Extreme Off Road Cars 3 Cargo","url":"https://class6x.gitlab.io/extreme-off-road-cars-3-cargo/"},{"id":"fairy-dressup","name":"Fairy Dressup","url":"https://class6x.gitlab.io/fairy-dressup/"},{"id":"fancy-pants","name":"Fancy Pants","url":"https://class6x.gitlab.io/fancy-pants/"},{"id":"fancy-pants-2","name":"Fancy Pants 2","url":"https://class6x.gitlab.io/fancy-pants-2/"},{"id":"fancy-pants-3","name":"Fancy Pants 3","url":"https://class6x.gitlab.io/fancy-pants-3/"},{"id":"fast-food-dumpster-adventure","name":"Fast Food Dumpster Adventure","url":"https://class6x.gitlab.io/fast-food-dumpster-adventure/"},{"id":"fireboy-and-watergirl-1-forest-temple","name":"Fireboy And Watergirl 1 Forest Temple","url":"https://class6x.gitlab.io/fireboy-and-watergirl-1-forest-temple/"},{"id":"fireboy-and-watergirl-2-light-temple","name":"Fireboy And Watergirl 2 Light Temple","url":"https://class6x.gitlab.io/fireboy-and-watergirl-2-light-temple/"},{"id":"fireboy-and-watergirl-3-ice-temple","name":"Fireboy And Watergirl 3 Ice Temple","url":"https://class6x.gitlab.io/fireboy-and-watergirl-3-ice-temple/"},{"id":"fireboy-and-watergirl-4-crystal-temple","name":"Fireboy And Watergirl 4 Crystal Temple","url":"https://class6x.gitlab.io/fireboy-and-watergirl-4-crystal-temple/"},{"id":"fireboy-and-watergirl-5-elements","name":"Fireboy And Watergirl 5 Elements","url":"https://class6x.gitlab.io/fireboy-and-watergirl-5-elements/"},{"id":"fireboy-and-watergirl-6-fairy-tales","name":"Fireboy And Watergirl 6 Fairy Tales","url":"https://class6x.gitlab.io/fireboy-and-watergirl-6-fairy-tales/"},{"id":"fireboy-watergirl-6-fairy-tales","name":"Fireboy Watergirl 6 Fairy Tales","url":"https://class6x.gitlab.io/fireboy-watergirl-6-fairy-tales/"},{"id":"fleeing-the-complex","name":"Fleeing The Complex","url":"https://class6x.gitlab.io/fleeing-the-complex/"},{"id":"flip-runner","name":"Flip Runner","url":"https://class6x.gitlab.io/flip-runner/"},{"id":"foot-chinko","name":"Foot Chinko","url":"https://class6x.gitlab.io/foot-chinko/"},{"id":"football-masters","name":"Football Masters","url":"https://class6x.gitlab.io/football-masters/"},{"id":"football-penalty-champions","name":"Football Penalty Champions","url":"https://class6x.gitlab.io/football-penalty-champions/"},{"id":"forgotten-hill-the-wardrobe-3","name":"Forgotten Hill The Wardrobe 3","url":"https://class6x.gitlab.io/forgotten-hill-the-wardrobe-3/"},{"id":"fortride-open-world","name":"Fortride Open World","url":"https://class6x.gitlab.io/fortride-open-world/"},{"id":"fortz","name":"Fortz","url":"https://class6x.gitlab.io/fortz/"},{"id":"four-in-a-row","name":"Four In A Row","url":"https://class6x.gitlab.io/four-in-a-row/"},{"id":"free-kick-screamers","name":"Free Kick Screamers","url":"https://class6x.gitlab.io/free-kick-screamers/"},{"id":"free-kick-shooter","name":"Free Kick Shooter","url":"https://class6x.gitlab.io/free-kick-shooter/"},{"id":"fruit-ninja","name":"Fruit Ninja","url":"https://class6x.gitlab.io/fruit-ninja/"},{"id":"funny-shooter-2","name":"Funny Shooter 2","url":"https://class6x.gitlab.io/funny-shooter-2/"},{"id":"fury-wars","name":"Fury Wars","url":"https://class6x.gitlab.io/fury-wars/"},{"id":"g-switch-3","name":"G Switch 3","url":"https://class6x.gitlab.io/g-switch-3/"},{"id":"g-switch-4","name":"G Switch 4","url":"https://class6x.gitlab.io/g-switch-4/"},{"id":"gangster-contract-mafia-wars","name":"Gangster Contract Mafia Wars","url":"https://class6x.gitlab.io/gangster-contract-mafia-wars/"},{"id":"geometry-dash","name":"Geometry Dash","url":"https://class6x.gitlab.io/geometry-dash/"},{"id":"getaway-shootout","name":"Getaway Shootout","url":"https://class6x.gitlab.io/getaway-shootout/"},{"id":"goat-vs-zombies","name":"Goat Vs Zombies","url":"https://class6x.gitlab.io/goat-vs-zombies/"},{"id":"gobdun","name":"Gobdun","url":"https://class6x.gitlab.io/gobdun/"},{"id":"golf-champions","name":"Golf Champions","url":"https://class6x.gitlab.io/golf-champions/"},{"id":"golfinity","name":"Golfinity","url":"https://class6x.gitlab.io/golfinity/"},{"id":"grand-prix-hero","name":"Grand Prix Hero","url":"https://class6x.gitlab.io/grand-prix-hero/"},{"id":"grindcraft","name":"Grindcraft","url":"https://class6x.gitlab.io/grindcraft/"},{"id":"gun-mayhem-2","name":"Gun Mayhem 2","url":"https://class6x.gitlab.io/gun-mayhem-2/"},{"id":"gunspin","name":"Gunspin","url":"https://class6x.gitlab.io/gunspin/"},{"id":"hammer-2-reloaded","name":"Hammer 2 Reloaded","url":"https://class6x.gitlab.io/hammer-2-reloaded/"},{"id":"head-soccer-2023","name":"Head Soccer 2023","url":"https://class6x.gitlab.io/head-soccer-2023/"},{"id":"heads-arena-soccer-all-stars","name":"Heads Arena Soccer All Stars","url":"https://class6x.gitlab.io/heads-arena-soccer-all-stars/"},{"id":"hide-and-smash","name":"Hide And Smash","url":"https://class6x.gitlab.io/hide-and-smash/"},{"id":"highway-bike-simulator","name":"Highway Bike Simulator","url":"https://class6x.gitlab.io/highway-bike-simulator/"},{"id":"highway-racer-3d","name":"Highway Racer 3d","url":"https://class6x.gitlab.io/highway-racer-3d/"},{"id":"highway-traffic","name":"Highway Traffic","url":"https://class6x.gitlab.io/highway-traffic/"},{"id":"hills-of-steel","name":"Hills Of Steel","url":"https://class6x.gitlab.io/hills-of-steel/"},{"id":"hop-chop","name":"Hop Chop","url":"https://class6x.gitlab.io/hop-chop/"},{"id":"hoppenhelm","name":"Hoppenhelm","url":"https://class6x.gitlab.io/hoppenhelm/"},{"id":"horse-simulator-3d","name":"Horse Simulator 3d","url":"https://class6x.gitlab.io/horse-simulator-3d/"},{"id":"house-of-hazards","name":"House Of Hazards","url":"https://class6x.gitlab.io/house-of-hazards/"},{"id":"hover-racer-drive","name":"Hover Racer Drive","url":"https://class6x.gitlab.io/hover-racer-drive/"},{"id":"idle-ants","name":"Idle Ants","url":"https://class6x.gitlab.io/idle-ants/"},{"id":"idle-digging-tycoon","name":"Idle Digging Tycoon","url":"https://class6x.gitlab.io/idle-digging-tycoon/"},{"id":"idle-startup-tycoon","name":"Idle Startup Tycoon","url":"https://class6x.gitlab.io/idle-startup-tycoon/"},{"id":"infinite-soccer","name":"Infinite Soccer","url":"https://class6x.gitlab.io/infinite-soccer/"},{"id":"into-the-pit","name":"Into The Pit","url":"https://class6x.gitlab.io/into-the-pit/"},{"id":"james-gun","name":"James Gun","url":"https://class6x.gitlab.io/james-gun/"},{"id":"jelly-truck","name":"Jelly Truck","url":"https://class6x.gitlab.io/jelly-truck/"},{"id":"jetpack-joyride","name":"Jetpack Joyride","url":"https://class6x.gitlab.io/jetpack-joyride/"},{"id":"jollyworld","name":"Jollyworld","url":"https://class6x.gitlab.io/jollyworld/"},{"id":"just-park-it-11","name":"Just Park It 11","url":"https://class6x.gitlab.io/just-park-it-11/"},{"id":"kix-dream-soccer","name":"Kix Dream Soccer","url":"https://class6x.gitlab.io/kix-dream-soccer/"},{"id":"lands-of-blight","name":"Lands Of Blight","url":"https://class6x.gitlab.io/lands-of-blight/"},{"id":"last-warriors","name":"Last Warriors","url":"https://class6x.gitlab.io/last-warriors/"},{"id":"leader-strike","name":"Leader Strike","url":"https://class6x.gitlab.io/leader-strike/"},{"id":"ledge-throw","name":"Ledge Throw","url":"https://class6x.gitlab.io/ledge-throw/"},{"id":"lethal-sniper-3d-army-soldier","name":"Lethal Sniper 3d Army Soldier","url":"https://class6x.gitlab.io/lethal-sniper-3d-army-soldier/"},{"id":"level-devil","name":"Level Devil","url":"https://class6x.gitlab.io/level-devil/"},{"id":"little-master-cricket","name":"Little Master Cricket","url":"https://class6x.gitlab.io/little-master-cricket/"},{"id":"mad-day","name":"Mad Day","url":"https://class6x.gitlab.io/mad-day/"},{"id":"madalin-stunt-cars-3","name":"Madalin Stunt Cars 3","url":"https://class6x.gitlab.io/madalin-stunt-cars-3/"},{"id":"madzoong","name":"Madzoong","url":"https://class6x.gitlab.io/madzoong/"},{"id":"make-it-meme","name":"Make It Meme","url":"https://class6x.gitlab.io/make-it-meme/"},{"id":"masked-forces","name":"Masked Forces","url":"https://class6x.gitlab.io/masked-forces/"},{"id":"master-checkers","name":"Master Checkers","url":"https://class6x.gitlab.io/master-checkers/"},{"id":"master-chess","name":"Master Chess","url":"https://class6x.gitlab.io/master-chess/"},{"id":"mimelet","name":"Mimelet","url":"https://class6x.gitlab.io/mimelet/"},{"id":"minecraft-builder","name":"Minecraft Builder","url":"https://class6x.gitlab.io/minecraft-builder/"},{"id":"mob-city","name":"Mob City","url":"https://class6x.gitlab.io/mob-city/"},{"id":"monster-tracks","name":"Monster Tracks","url":"https://class6x.gitlab.io/monster-tracks/"},{"id":"moto-maniac","name":"Moto Maniac","url":"https://class6x.gitlab.io/moto-maniac/"},{"id":"moto-maniac-2","name":"Moto Maniac 2","url":"https://class6x.gitlab.io/moto-maniac-2/"},{"id":"moto-road-rash-3d","name":"Moto Road Rash 3d","url":"https://class6x.gitlab.io/moto-road-rash-3d/"},{"id":"moto-x3m","name":"Moto X3m","url":"https://class6x.gitlab.io/moto-x3m/"},{"id":"moto-x3m-2","name":"Moto X3m 2","url":"https://class6x.gitlab.io/moto-x3m-2/"},{"id":"moto-x3m-pool-party","name":"Moto X3m Pool Party","url":"https://class6x.gitlab.io/moto-x3m-pool-party/"},{"id":"moto-x3m-spooky-land","name":"Moto X3m Spooky Land","url":"https://class6x.gitlab.io/moto-x3m-spooky-land/"},{"id":"moto-x3m-winter","name":"Moto X3m Winter","url":"https://class6x.gitlab.io/moto-x3m-winter/"},{"id":"moving-truck-bounty","name":"Moving Truck Bounty","url":"https://class6x.gitlab.io/moving-truck-bounty/"},{"id":"murder","name":"Murder","url":"https://class6x.gitlab.io/murder/"},{"id":"n-gon","name":"N Gon","url":"https://class6x.gitlab.io/n-gon/"},{"id":"narrow-one","name":"Narrow One","url":"https://class6x.gitlab.io/narrow-one/"},{"id":"nightpoint-io","name":"Nightpoint Io","url":"https://class6x.gitlab.io/nightpoint-io/"},{"id":"noob-drive","name":"Noob Drive","url":"https://class6x.gitlab.io/noob-drive/"},{"id":"noob-hook","name":"Noob Hook","url":"https://class6x.gitlab.io/noob-hook/"},{"id":"odd-bot-out","name":"Odd Bot Out","url":"https://class6x.gitlab.io/odd-bot-out/"},{"id":"offroader-v5","name":"Offroader V5","url":"https://class6x.gitlab.io/offroader-v5/"},{"id":"ooze-odyssey","name":"Ooze Odyssey","url":"https://class6x.gitlab.io/ooze-odyssey/"},{"id":"ovo","name":"Ovo","url":"https://class6x.gitlab.io/ovo/"},{"id":"ovo-dimensions","name":"Ovo Dimensions","url":"https://class6x.gitlab.io/ovo-dimensions/"},{"id":"papas-cheeseria","name":"Papas Cheeseria","url":"https://class6x.gitlab.io/papas-cheeseria/"},{"id":"papas-donuteria","name":"Papas Donuteria","url":"https://class6x.gitlab.io/papas-donuteria/"},{"id":"papas-hotdoggeria","name":"Papas Hotdoggeria","url":"https://class6x.gitlab.io/papas-hotdoggeria/"},{"id":"papas-pancakeria","name":"Papas Pancakeria","url":"https://class6x.gitlab.io/papas-pancakeria/"},{"id":"papas-pizzeria","name":"Papas Pizzeria","url":"https://class6x.gitlab.io/papas-pizzeria/"},{"id":"paper-fighter-3d","name":"Paper Fighter 3d","url":"https://class6x.gitlab.io/paper-fighter-3d/"},{"id":"paper-io-2","name":"Paper Io 2","url":"https://class6x.gitlab.io/paper-io-2/"},{"id":"paper-minecraft","name":"Paper Minecraft","url":"https://class6x.gitlab.io/paper-minecraft/"},{"id":"parking-fury","name":"Parking Fury","url":"https://class6x.gitlab.io/parking-fury/"},{"id":"parking-fury-2","name":"Parking Fury 2","url":"https://class6x.gitlab.io/parking-fury-2/"},{"id":"parkmania","name":"Parkmania","url":"https://class6x.gitlab.io/parkmania/"},{"id":"penalty-rivals","name":"Penalty Rivals","url":"https://class6x.gitlab.io/penalty-rivals/"},{"id":"penalty-shooters-2","name":"Penalty Shooters 2","url":"https://class6x.gitlab.io/penalty-shooters-2/"},{"id":"perfect-peel","name":"Perfect Peel","url":"https://class6x.gitlab.io/perfect-peel/"},{"id":"ping-pong-chaos","name":"Ping Pong Chaos","url":"https://class6x.gitlab.io/ping-pong-chaos/"},{"id":"pixel-gun-survival","name":"Pixel Gun Survival","url":"https://class6x.gitlab.io/pixel-gun-survival/"},{"id":"pixwars-2","name":"Pixwars 2","url":"https://class6x.gitlab.io/pixwars-2/"},{"id":"pizzafall","name":"Pizzafall","url":"https://class6x.gitlab.io/pizzafall/"},{"id":"pool-club","name":"Pool Club","url":"https://class6x.gitlab.io/pool-club/"},{"id":"poor-bunny","name":"Poor Bunny","url":"https://class6x.gitlab.io/poor-bunny/"},{"id":"power-badminton","name":"Power Badminton","url":"https://class6x.gitlab.io/power-badminton/"},{"id":"puppet-master","name":"Puppet Master","url":"https://class6x.gitlab.io/puppet-master/"},{"id":"raft-wars-2","name":"Raft Wars 2","url":"https://class6x.gitlab.io/raft-wars-2/"},{"id":"ragdoll-hit","name":"Ragdoll Hit","url":"https://class6x.gitlab.io/ragdoll-hit/"},{"id":"rally-champion","name":"Rally Champion","url":"https://class6x.gitlab.io/rally-champion/"},{"id":"rally-point","name":"Rally Point","url":"https://class6x.gitlab.io/rally-point/"},{"id":"rally-point-5","name":"Rally Point 5","url":"https://class6x.gitlab.io/rally-point-5/"},{"id":"rebels-clash","name":"Rebels Clash","url":"https://class6x.gitlab.io/rebels-clash/"},{"id":"recoil","name":"Recoil","url":"https://class6x.gitlab.io/recoil/"},{"id":"retro-bowl","name":"Retro Bowl","url":"https://class6x.gitlab.io/retro-bowl/"},{"id":"retro-highway","name":"Retro Highway","url":"https://class6x.gitlab.io/retro-highway/"},{"id":"riddle-school","name":"Riddle School","url":"https://class6x.gitlab.io/riddle-school/"},{"id":"rocket-soccer-derby","name":"Rocket Soccer Derby","url":"https://class6x.gitlab.io/rocket-soccer-derby/"},{"id":"rodeo-stampede-savannah","name":"Rodeo Stampede Savannah","url":"https://class6x.gitlab.io/rodeo-stampede-savannah/"},{"id":"rolling-sky","name":"Rolling Sky","url":"https://class6x.gitlab.io/rolling-sky/"},{"id":"rooftop-snipers","name":"Rooftop Snipers","url":"https://class6x.gitlab.io/rooftop-snipers/"},{"id":"school-bus-demolition-derby","name":"School Bus Demolition Derby","url":"https://class6x.gitlab.io/school-bus-demolition-derby/"},{"id":"shady-bears","name":"Shady Bears","url":"https://class6x.gitlab.io/shady-bears/"},{"id":"shoot-stickman","name":"Shoot Stickman","url":"https://class6x.gitlab.io/shoot-stickman/"},{"id":"shootz","name":"Shootz","url":"https://class6x.gitlab.io/shootz/"},{"id":"short-life","name":"Short Life","url":"https://class6x.gitlab.io/short-life/"},{"id":"short-ride","name":"Short Ride","url":"https://class6x.gitlab.io/short-ride/"},{"id":"shortcut-race","name":"Shortcut Race","url":"https://class6x.gitlab.io/shortcut-race/"},{"id":"skateboard-hero","name":"Skateboard Hero","url":"https://class6x.gitlab.io/skateboard-hero/"},{"id":"slime-laboratory","name":"Slime Laboratory","url":"https://class6x.gitlab.io/slime-laboratory/"},{"id":"slime-laboratory-3","name":"Slime Laboratory 3","url":"https://class6x.gitlab.io/slime-laboratory-3/"},{"id":"sling-drift","name":"Sling Drift","url":"https://class6x.gitlab.io/sling-drift/"},{"id":"slope","name":"Slope","url":"https://class6x.gitlab.io/slope/"},{"id":"slope-2","name":"Slope 2","url":"https://class6x.gitlab.io/slope-2/"},{"id":"slope-2-multiplayer","name":"Slope 2 Multiplayer","url":"https://class6x.gitlab.io/slope-2-multiplayer/"},{"id":"slot-car-racing","name":"Slot Car Racing","url":"https://class6x.gitlab.io/slot-car-racing/"},{"id":"smash-karts","name":"Smash Karts","url":"https://class6x.gitlab.io/smash-karts/"},{"id":"snake","name":"Snake","url":"https://class6x.gitlab.io/snake/"},{"id":"snake-is-mlg-edition","name":"Snake Is Mlg Edition","url":"https://class6x.gitlab.io/snake-is-mlg-edition/"},{"id":"snakeis-mlg-edition","name":"Snakeis Mlg Edition","url":"https://class6x.gitlab.io/snakeis-mlg-edition/"},{"id":"sniper-gun-shooting","name":"Sniper Gun Shooting","url":"https://class6x.gitlab.io/sniper-gun-shooting/"},{"id":"snow-rider-3d","name":"Snow Rider 3d","url":"https://class6x.gitlab.io/snow-rider-3d/"},{"id":"soccar","name":"Soccar","url":"https://class6x.gitlab.io/soccar/"},{"id":"soccer-random","name":"Soccer Random","url":"https://class6x.gitlab.io/soccer-random/"},{"id":"soccer-skills-champions-league","name":"Soccer Skills Champions League","url":"https://class6x.gitlab.io/soccer-skills-champions-league/"},{"id":"soccer-skills-euro-cup","name":"Soccer Skills Euro Cup","url":"https://class6x.gitlab.io/soccer-skills-euro-cup/"},{"id":"soccer-skills-world-cup","name":"Soccer Skills World Cup","url":"https://class6x.gitlab.io/soccer-skills-world-cup/"},{"id":"space-major-miner","name":"Space Major Miner","url":"https://class6x.gitlab.io/space-major-miner/"},{"id":"speed-boat-extreme-racing","name":"Speed Boat Extreme Racing","url":"https://class6x.gitlab.io/speed-boat-extreme-racing/"},{"id":"stack-ball","name":"Stack Ball","url":"https://class6x.gitlab.io/stack-ball/"},{"id":"stacktris","name":"Stacktris","url":"https://class6x.gitlab.io/stacktris/"},{"id":"stealing-the-diamond","name":"Stealing The Diamond","url":"https://class6x.gitlab.io/stealing-the-diamond/"},{"id":"stick-defenders","name":"Stick Defenders","url":"https://class6x.gitlab.io/stick-defenders/"},{"id":"stick-fighter","name":"Stick Fighter","url":"https://class6x.gitlab.io/stick-fighter/"},{"id":"stick-merge","name":"Stick Merge","url":"https://class6x.gitlab.io/stick-merge/"},{"id":"stickman-archero-fight","name":"Stickman Archero Fight","url":"https://class6x.gitlab.io/stickman-archero-fight/"},{"id":"stickman-army-team-battle","name":"Stickman Army Team Battle","url":"https://class6x.gitlab.io/stickman-army-team-battle/"},{"id":"stickman-army-the-resistance","name":"Stickman Army The Resistance","url":"https://class6x.gitlab.io/stickman-army-the-resistance/"},{"id":"stickman-bike","name":"Stickman Bike","url":"https://class6x.gitlab.io/stickman-bike/"},{"id":"stickman-bike-pr","name":"Stickman Bike Pr","url":"https://class6x.gitlab.io/stickman-bike-pr/"},{"id":"stickman-bridge-constructor","name":"Stickman Bridge Constructor","url":"https://class6x.gitlab.io/stickman-bridge-constructor/"},{"id":"stickman-climb-2","name":"Stickman Climb 2","url":"https://class6x.gitlab.io/stickman-climb-2/"},{"id":"stickman-fight-ragdoll","name":"Stickman Fight Ragdoll","url":"https://class6x.gitlab.io/stickman-fight-ragdoll/"},{"id":"stickman-fighter-epic-battle-2","name":"Stickman Fighter Epic Battle 2","url":"https://class6x.gitlab.io/stickman-fighter-epic-battle-2/"},{"id":"stickman-fighter-mega-brawl","name":"Stickman Fighter Mega Brawl","url":"https://class6x.gitlab.io/stickman-fighter-mega-brawl/"},{"id":"stickman-golf","name":"Stickman Golf","url":"https://class6x.gitlab.io/stickman-golf/"},{"id":"stickman-hook","name":"Stickman Hook","url":"https://class6x.gitlab.io/stickman-hook/"},{"id":"stickman-parkour-3","name":"Stickman Parkour 3","url":"https://class6x.gitlab.io/stickman-parkour-3/"},{"id":"stickman-ragdoll-crash-fun","name":"Stickman Ragdoll Crash Fun","url":"https://class6x.gitlab.io/stickman-ragdoll-crash-fun/"},{"id":"stickman-run","name":"Stickman Run","url":"https://class6x.gitlab.io/stickman-run/"},{"id":"stickman-school-run","name":"Stickman School Run","url":"https://class6x.gitlab.io/stickman-school-run/"},{"id":"stock-car-hero","name":"Stock Car Hero","url":"https://class6x.gitlab.io/stock-car-hero/"},{"id":"street-ball-jam","name":"Street Ball Jam","url":"https://class6x.gitlab.io/street-ball-jam/"},{"id":"striker-dummies","name":"Striker Dummies","url":"https://class6x.gitlab.io/striker-dummies/"},{"id":"stupid-zombies","name":"Stupid Zombies","url":"https://class6x.gitlab.io/stupid-zombies/"},{"id":"stupid-zombies-2","name":"Stupid Zombies 2","url":"https://class6x.gitlab.io/stupid-zombies-2/"},{"id":"subway-surfers-beijing","name":"Subway Surfers Beijing","url":"https://class6x.gitlab.io/subway-surfers-beijing/"},{"id":"sumo-party","name":"Sumo Party","url":"https://class6x.gitlab.io/sumo-party/"},{"id":"super-bike-the-champion","name":"Super Bike The Champion","url":"https://class6x.gitlab.io/super-bike-the-champion/"},{"id":"super-hot","name":"Super Hot","url":"https://class6x.gitlab.io/super-hot/"},{"id":"super-liquid-soccer","name":"Super Liquid Soccer","url":"https://class6x.gitlab.io/super-liquid-soccer/"},{"id":"super-racing-gt-drag-pro","name":"Super Racing Gt Drag Pro","url":"https://class6x.gitlab.io/super-racing-gt-drag-pro/"},{"id":"super-star-car","name":"Super Star Car","url":"https://class6x.gitlab.io/super-star-car/"},{"id":"super-tunnel-rush","name":"Super Tunnel Rush","url":"https://class6x.gitlab.io/super-tunnel-rush/"},{"id":"superbattle-2","name":"Superbattle 2","url":"https://class6x.gitlab.io/superbattle-2/"},{"id":"superbike-hero","name":"Superbike Hero","url":"https://class6x.gitlab.io/superbike-hero/"},{"id":"tag","name":"Tag","url":"https://class6x.gitlab.io/tag/"},{"id":"tag-2","name":"Tag 2","url":"https://class6x.gitlab.io/tag-2/"},{"id":"tank-trouble-2","name":"Tank Trouble 2","url":"https://class6x.gitlab.io/tank-trouble-2/"},{"id":"tanuki-sunset","name":"Tanuki Sunset","url":"https://class6x.gitlab.io/tanuki-sunset/"},{"id":"teleport-jumper","name":"Teleport Jumper","url":"https://class6x.gitlab.io/teleport-jumper/"},{"id":"temple-of-boom","name":"Temple Of Boom","url":"https://class6x.gitlab.io/temple-of-boom/"},{"id":"temple-run-2-frozen-shadows","name":"Temple Run 2 Frozen Shadows","url":"https://class6x.gitlab.io/temple-run-2-frozen-shadows/"},{"id":"temple-run-2-holi-festival","name":"Temple Run 2 Holi Festival","url":"https://class6x.gitlab.io/temple-run-2-holi-festival/"},{"id":"tennis-masters","name":"Tennis Masters","url":"https://class6x.gitlab.io/tennis-masters/"},{"id":"there-is-no-game","name":"There Is No Game","url":"https://class6x.gitlab.io/there-is-no-game/"},{"id":"thumb-fighter","name":"Thumb Fighter","url":"https://class6x.gitlab.io/thumb-fighter/"},{"id":"tictactoe","name":"Tictactoe","url":"https://class6x.gitlab.io/tictactoe/"},{"id":"tiger-simulator-3d","name":"Tiger Simulator 3d","url":"https://class6x.gitlab.io/tiger-simulator-3d/"},{"id":"time-clones","name":"Time Clones","url":"https://class6x.gitlab.io/time-clones/"},{"id":"tingly-ppyramid-solitaire","name":"Tingly Ppyramid Solitaire","url":"https://class6x.gitlab.io/tingly-ppyramid-solitaire/"},{"id":"tingly-pyramid-solitaire","name":"Tingly Pyramid Solitaire","url":"https://class6x.gitlab.io/tingly-pyramid-solitaire/"},{"id":"tiny-fishing","name":"Tiny Fishing","url":"https://class6x.gitlab.io/tiny-fishing/"},{"id":"top-speed-racing-3d","name":"Top Speed Racing 3d","url":"https://class6x.gitlab.io/top-speed-racing-3d/"},{"id":"towntopia","name":"Towntopia","url":"https://class6x.gitlab.io/towntopia/"},{"id":"traffic-mania","name":"Traffic Mania","url":"https://class6x.gitlab.io/traffic-mania/"},{"id":"traffic-rider","name":"Traffic Rider","url":"https://class6x.gitlab.io/traffic-rider/"},{"id":"traffic-rush","name":"Traffic Rush","url":"https://class6x.gitlab.io/traffic-rush/"},{"id":"tricks","name":"Tricks","url":"https://class6x.gitlab.io/tricks/"},{"id":"truck-loader","name":"Truck Loader","url":"https://class6x.gitlab.io/truck-loader/"},{"id":"tube-jumpers","name":"Tube Jumpers","url":"https://class6x.gitlab.io/tube-jumpers/"},{"id":"tunnel-rush","name":"Tunnel Rush","url":"https://class6x.gitlab.io/tunnel-rush/"},{"id":"turbo-moto-racer","name":"Turbo Moto Racer","url":"https://class6x.gitlab.io/turbo-moto-racer/"},{"id":"ultimate-car-driving","name":"Ultimate Car Driving","url":"https://class6x.gitlab.io/ultimate-car-driving/"},{"id":"unicycle-hero","name":"Unicycle Hero","url":"https://class6x.gitlab.io/unicycle-hero/"},{"id":"vex-6","name":"Vex 6","url":"https://class6x.gitlab.io/vex-6/"},{"id":"vex-7","name":"Vex 7","url":"https://class6x.gitlab.io/vex-7/"},{"id":"vex-8","name":"Vex 8","url":"https://class6x.gitlab.io/vex-8/"},{"id":"village-craft","name":"Village Craft","url":"https://class6x.gitlab.io/village-craft/"},{"id":"volley-random","name":"Volley Random","url":"https://class6x.gitlab.io/volley-random/"},{"id":"war-of-caribbean-pirates","name":"War Of Caribbean Pirates","url":"https://class6x.gitlab.io/war-of-caribbean-pirates/"},{"id":"we-become-what-we-behold","name":"We Become What We Behold","url":"https://class6x.gitlab.io/we-become-what-we-behold/"},{"id":"wood-blocks-3d","name":"Wood Blocks 3d","url":"https://class6x.gitlab.io/wood-blocks-3d/"},{"id":"word-city-crossed","name":"Word City Crossed","url":"https://class6x.gitlab.io/word-city-crossed/"},{"id":"words-search-classic-edition","name":"Words Search Classic Edition","url":"https://class6x.gitlab.io/words-search-classic-edition/"},{"id":"world-conquest","name":"World Conquest","url":"https://class6x.gitlab.io/world-conquest/"},{"id":"worlds-hardest-game-2","name":"Worlds Hardest Game 2","url":"https://class6x.gitlab.io/worlds-hardest-game-2/"},{"id":"worlds-hardest-game-3","name":"Worlds Hardest Game 3","url":"https://class6x.gitlab.io/worlds-hardest-game-3/"},{"id":"wrassling","name":"Wrassling","url":"https://class6x.gitlab.io/wrassling/"},{"id":"yohohoio","name":"Yohohoio","url":"https://class6x.gitlab.io/yohohoio/"},{"id":"yokai-dungeon","name":"Yokai Dungeon","url":"https://class6x.gitlab.io/yokai-dungeon/"},{"id":"zeepkist-crash-2d","name":"Zeepkist Crash 2d","url":"https://class6x.gitlab.io/zeepkist-crash-2d/"},{"id":"zen-blocks","name":"Zen Blocks","url":"https://class6x.gitlab.io/zen-blocks/"},{"id":"zombie-siege-outbreak","name":"Zombie Siege Outbreak","url":"https://class6x.gitlab.io/zombie-siege-outbreak/"}];
 
@@ -169,6 +174,49 @@ function uid() { return "u_" + Math.random().toString(36).slice(2, 10); }
 function initials(n) { return ((String(n || "?").trim()[0]) || "?").toUpperCase(); }
 function userById(id) { return state.users.find(u => u.id === id); }
 function currentUser() { return userById(state.sessionUserId); }
+
+/** Stable Mount ID — saved on the signed-in user + localStorage */
+function getMountId() {
+  var id = "";
+  try {
+    var u = currentUser();
+    if (u && u.mountId && String(u.mountId).indexOf("mount_") === 0) {
+      return String(u.mountId);
+    }
+    // per-user storage
+    if (u && u.id) {
+      try { id = localStorage.getItem("mount_id_" + u.id) || ""; } catch (e) {}
+      if (id && id.indexOf("mount_") === 0) {
+        u.mountId = id;
+        try { save(); } catch (e) {}
+        return id;
+      }
+    }
+    try { id = localStorage.getItem("mount_user_id") || ""; } catch (e) {}
+    if (id && id.indexOf("mount_") === 0) {
+      if (u) {
+        u.mountId = id;
+        try { save(); } catch (e) {}
+        try { localStorage.setItem("mount_id_" + u.id, id); } catch (e) {}
+      }
+      return id;
+    }
+    id = "mount_" + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+    if (u) {
+      u.mountId = id;
+      try { save(); } catch (e) {}
+      try { localStorage.setItem("mount_id_" + u.id, id); } catch (e) {}
+    }
+    try { localStorage.setItem("mount_user_id", id); } catch (e) {}
+    return id;
+  } catch (err) {
+    id = "mount_" + Math.random().toString(36).slice(2, 12);
+    try { localStorage.setItem("mount_user_id", id); } catch (e) {}
+    return id;
+  }
+}
+function ensureMountId() { return getMountId(); }
+
 function ensureUser(u) {
   if (!u.data) u.data = {};
   if (!u.data.prefs) u.data.prefs = {};
@@ -405,6 +453,7 @@ function signIn(user) {
 function enterSession() {
   const u = currentUser();
   if (!u) { showScreen("lock"); return; }
+  try { ensureMountId(); } catch (e) {}
   document.getElementById("session-avatar").innerHTML = USER_ICON;
   document.getElementById("session-name").textContent = u.name;
   applyWallpaper();
@@ -526,13 +575,13 @@ function openApp(id) {
   win.className = "window";
   win.dataset.id = id;
   const w = Math.min(
-    id === "settings" || id === "games" || id === "ai" || id === "imagine" || id === "files" || id === "notes" ? 1020 :
+    id === "settings" || id === "games" || id === "ai" || id === "imagine" || id === "files" || id === "notes" || id === "minecraft" || id === "chat" ? 1020 :
     id === "browser" ? 1000 :
     id === "calc" ? 320 : id === "terminal" ? 900 : 520,
     innerWidth - 16
   );
   const h = Math.min(
-    id === "settings" || id === "ai" || id === "imagine" || id === "files" || id === "notes" ? 640 :
+    id === "settings" || id === "ai" || id === "imagine" || id === "files" || id === "notes" || id === "minecraft" ? 640 :
     id === "games" ? Math.min(innerHeight - 80, 820) :
     id === "browser" ? 640 :
     id === "calc" ? 440 : id === "terminal" ? 560 : 380,
@@ -547,6 +596,7 @@ function openApp(id) {
   let wicon;
   if (app.icon === "GEAR") wicon = `<div class="wicon settings-wicon"><img src="${GEAR_URL}" alt=""></div>`;
   else if (app.icon === "WEB") wicon = `<div class="wicon" style="background:#2563eb;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg></div>`;
+  else if (app.icon === "MC") wicon = `<div class="wicon" style="padding:0;overflow:hidden;border-radius:3px"><img src="${MC_ICON}" alt="" style="width:100%;height:100%;object-fit:cover"></div>`;
   else if (app.icon === "GAME") wicon = `<div class="wicon" style="background:#333;padding:2px"><img src="${GAMES_ICON}" alt="" style="width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1)"></div>`;
   else if (app.icon === "IMAGINE") wicon = `<div class="wicon" style="background:linear-gradient(135deg,#a855f7,#ec4899);display:grid;place-items:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="2"><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></div>`;
   else if (app.icon === "AI") wicon = `<div class="wicon" style="background:linear-gradient(135deg,#60cdff,#8b5cf6)"></div>`;
@@ -586,6 +636,8 @@ function openApp(id) {
   else if (id === "calc") renderCalc(body);
   else if (id === "terminal") renderTerminal(body);
   else if (id === "clock") renderClockApp(body);
+  else if (id === "minecraft") renderMinecraft(body);
+  else if (id === "chat") renderMountChat(body);
   else body.innerHTML = `<div style="padding:16px">${app.name}</div>`;
 
   document.getElementById("windows").appendChild(win);
@@ -645,6 +697,7 @@ function tbIconHTML(app) {
   if (!app) return "*";
   if (app.icon === "GEAR") return `<span class="gear-ico"><img src="${GEAR_URL}" alt=""></span>`;
   if (app.icon === "WEB") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`;
+  if (app.icon === "MC") return `<img src="${MC_ICON}" alt="" style="width:20px;height:20px;border-radius:4px;object-fit:cover">`;
   if (app.icon === "GAME") return `<img src="${GAMES_ICON}" alt="" style="width:18px;height:18px;object-fit:contain;filter:brightness(0) invert(1)">`;
   if (app.icon === "IMAGINE") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e879f9" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg>`;
   if (app.icon === "AI") return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60cdff" stroke-width="1.8"><path d="M12 3a6 6 0 0 1 6 6v1a4 4 0 0 1 3 4v1H3v-1a4 4 0 0 1 3-4V9a6 6 0 0 1 6-6z"/><path d="M9 18h6M10 21h4"/></svg>`;
@@ -663,7 +716,7 @@ function tbIconHTML(app) {
 }
 
 // Always pinned on the taskbar
-const TASKBAR_PINNED = ["files", "notes", "calc", "terminal", "clock"];
+const TASKBAR_PINNED = ["files", "notes", "calc", "terminal"];
 
 function renderTaskbar() {
   const bar = document.getElementById("task-apps");
@@ -2462,6 +2515,15 @@ function renderSettings(root) {
         save();
       };
       main.querySelector("#t-notif").onclick = function () { this.classList.toggle("on"); };
+    
+      try {
+        var sid = getMountId();
+        var card = document.createElement("div");
+        card.className = "s-card";
+        card.innerHTML = "<b>Your Mount ID</b><p style=\"margin:8px 0 0;font-family:ui-monospace,monospace;color:#7dd3fc;word-break:break-all\">" + sid + "</p>";
+        main.appendChild(card);
+      } catch (e) {}
+
     }
     if (panel === "personalize") {
       var cur = (state.settings && state.settings.wallpaper) || "animated";
@@ -2535,6 +2597,8 @@ function renderSettings(root) {
       paintPreview(cur.indexOf("data:") === 0 ? "animated" : cur);
     }
     if (panel === "accounts") {
+      var myMountId = "";
+      try { myMountId = ensureMountId(); } catch (e) { myMountId = ""; }
       const rows = state.users.map(u => `
         <div class="s-card"><div class="row">
           <div><b>${u.name}${u.id === state.sessionUserId ? " (signed in)" : ""}</b><p>Local account</p></div>
@@ -2543,6 +2607,14 @@ function renderSettings(root) {
       main.innerHTML = `
         <h3>Accounts</h3>
         <div class="sub">Your accounts</div>
+        <div class="s-card">
+          <b>Your Mount ID</b>
+          <p style="margin:8px 0;font-size:12px;color:#9ab">Saved with your account · used for Chat tags</p>
+          <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap">
+            <code id="set-mount-id" style="font-size:13px;color:#cfe;word-break:break-all">${myMountId || "(none)"}</code>
+            <button type="button" class="btn" id="set-copy-mount-id" style="width:auto;padding:6px 12px;margin:0">Copy</button>
+          </div>
+        </div>
         ${rows}
         <div class="s-card">
           <b>Add an account</b>
@@ -2556,18 +2628,49 @@ function renderSettings(root) {
           save(); show("accounts");
         };
       });
+      var copyBtn = main.querySelector("#set-copy-mount-id");
+      if (copyBtn) {
+        copyBtn.onclick = function () {
+          var id = (main.querySelector("#set-mount-id") && main.querySelector("#set-mount-id").textContent) || "";
+          try {
+            navigator.clipboard.writeText(id);
+            if (window.mountToast) mountToast("Mount ID copied");
+          } catch (e) {
+            if (window.mountToast) mountToast(id);
+          }
+        };
+      }
+      // ensure ID exists & is saved on account
+      try { ensureMountId(); } catch (e) {}
       main.querySelector("#set-add").onclick = () => {
         const err = createUser(main.querySelector("#set-new-name").value, main.querySelector("#set-new-pass").value);
         if (err) alert(err); else show("accounts");
       };
     }
     if (panel === "about") {
-      main.innerHTML = `
-        <h3>About</h3>
-        <div class="sub">Mount OS</div>
-        <div class="s-card"><div class="row"><div><b>Edition</b><p>Mount OS</p></div></div></div>
-        <div class="s-card"><div class="row"><div><b>Version</b><p>1.0.0</p></div></div></div>
-        <div class="s-card"><div class="row"><div><b>Storage</b><p>localStorage</p></div></div></div>`;
+      var aboutId = getMountId();
+      var aboutName = "";
+      try { var cu = currentUser(); if (cu) aboutName = cu.name || ""; } catch (e) {}
+      main.innerHTML =
+        "<h3>About</h3>" +
+        "<div class=\"sub\">Mount OS</div>" +
+        "<div class=\"s-card\"><div class=\"row\"><div><b>Edition</b><p>Mount OS</p></div></div></div>" +
+        "<div class=\"s-card\"><div class=\"row\"><div><b>Version</b><p>1.0.0</p></div></div></div>" +
+        "<div class=\"s-card\"><div class=\"row\"><div><b>Storage</b><p>localStorage</p></div></div></div>" +
+        "<div class=\"s-card\" style=\"border:1px solid rgba(96,205,255,0.35)\">" +
+          "<b>Your Mount ID</b>" +
+          "<p style=\"margin:10px 0 6px;font-size:16px;font-family:ui-monospace,monospace;color:#7dd3fc;word-break:break-all\" id=\"about-mount-id\">" + aboutId + "</p>" +
+          (aboutName ? "<p style=\"font-size:12px;color:#9ab;margin:0 0 10px\">Signed in as " + aboutName + "</p>" : "") +
+          "<button type=\"button\" class=\"btn primary\" id=\"about-copy-id\" style=\"width:auto;padding:8px 14px;margin:0\">Copy Mount ID</button>" +
+        "</div>";
+      var ac = main.querySelector("#about-copy-id");
+      if (ac) {
+        ac.onclick = function () {
+          var id = aboutId;
+          try { navigator.clipboard.writeText(id); if (window.mountToast) mountToast("Copied " + id); }
+          catch (e) { prompt("Your Mount ID", id); }
+        };
+      }
     }
   }
   navs.forEach(n => n.onclick = () => show(n.dataset.panel));
@@ -2749,6 +2852,179 @@ try { ensureProxySW(); } catch (e) {}
 
 
 
+
+
+
+
+function renderMountChat(root) {
+  var myId = ensureMountId();
+  // Always use the signed-in Mount username
+  function currentName() {
+    try {
+      var u = currentUser();
+      if (u && u.name) return String(u.name);
+    } catch (e) {}
+    var el = document.getElementById("session-name");
+    if (el && el.textContent && el.textContent.trim()) return el.textContent.trim();
+    return "Player";
+  }
+  var rolesMap = {};
+  var MSG_KEY = "mount_chat_msgs_v1";
+  var channel = null;
+
+  root.innerHTML = `
+    <div class="chat-room">
+      <div class="chat-room-top">
+        <span>Mount Chat</span>
+        <small id="chat-room-you"></small>
+      </div>
+      <div class="chat-log" id="chat-log"></div>
+      <form class="chat-compose" id="chat-form">
+        <input id="chat-input" type="text" maxlength="400" placeholder="Type a message…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>`;
+
+  function loadMsgs() {
+    try { return JSON.parse(localStorage.getItem(MSG_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveMsgs(list) {
+    try { localStorage.setItem(MSG_KEY, JSON.stringify(list.slice(-200))); } catch (e) {}
+  }
+  function tagFor(id) {
+    var r = rolesMap[id];
+    if (!r) return null;
+    return { tag: r.tag || "Member", color: r.color || "#60cdff" };
+  }
+  function updateYouLine() {
+    var name = currentName();
+    var t = tagFor(myId);
+    var el = root.querySelector("#chat-room-you");
+    el.textContent = "Signed in as " + name + (t ? " · " + t.tag : "");
+  }
+  function renderLog() {
+    var log = root.querySelector("#chat-log");
+    var msgs = loadMsgs();
+    log.innerHTML = "";
+    msgs.forEach(function (m) {
+      var row = document.createElement("div");
+      row.className = "chat-msg" + (m.id === myId ? " mine" : "");
+      var head = document.createElement("div");
+      head.className = "chat-msg-head";
+      var name = document.createElement("strong");
+      name.textContent = m.name || "User";
+      head.appendChild(name);
+      var tg = tagFor(m.id);
+      if (tg) {
+        var badge = document.createElement("span");
+        badge.className = "chat-tag";
+        badge.style.background = tg.color;
+        badge.textContent = tg.tag;
+        head.appendChild(badge);
+      }
+      var time = document.createElement("small");
+      try {
+        time.textContent = new Date(m.ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      } catch (e) { time.textContent = ""; }
+      head.appendChild(time);
+      var body = document.createElement("div");
+      body.className = "chat-msg-body";
+      body.textContent = m.text || "";
+      row.appendChild(head);
+      row.appendChild(body);
+      log.appendChild(row);
+    });
+    log.scrollTop = log.scrollHeight;
+  }
+  function pushMsg(m, broadcast) {
+    var list = loadMsgs();
+    if (list.some(function (x) { return x.ts === m.ts && x.id === m.id && x.text === m.text; })) {
+      renderLog();
+      return;
+    }
+    list.push(m);
+    saveMsgs(list);
+    renderLog();
+    if (broadcast && channel) {
+      try { channel.postMessage({ type: "chat", msg: m }); } catch (e) {}
+    }
+  }
+  function loadRoles() {
+    return fetch("mount-roles.json?t=" + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        rolesMap = {};
+        (data.roles || []).forEach(function (r) {
+          if (r && r.id) rolesMap[String(r.id)] = r;
+        });
+        updateYouLine();
+        renderLog();
+      })
+      .catch(function () {
+        rolesMap = {};
+        updateYouLine();
+        renderLog();
+      });
+  }
+
+  try {
+    channel = new BroadcastChannel("mount_chat_v1");
+    channel.onmessage = function (ev) {
+      var d = ev.data;
+      if (d && d.type === "chat" && d.msg) pushMsg(d.msg, false);
+    };
+  } catch (e) { channel = null; }
+
+  root.querySelector("#chat-form").onsubmit = function (e) {
+    e.preventDefault();
+    var input = root.querySelector("#chat-input");
+    var text = (input.value || "").trim();
+    if (!text) return;
+    input.value = "";
+    pushMsg({
+      id: myId,
+      name: currentName(),
+      text: text,
+      ts: Date.now()
+    }, true);
+  };
+
+  loadRoles();
+  renderLog();
+  updateYouLine();
+  root.querySelector("#chat-input").focus();
+}
+
+function renderMinecraft(root) {
+  var MC_URL = "https://ksimmisk497.github.io/dizzy/vendor/games/clEaglercraftL_19_v0_7_0_Offline_Signed.html";
+  root.innerHTML = `
+    <div class="mc-app">
+      <div class="mc-toolbar">
+        <span>Minecraft</span>
+        <span class="mc-sub">Eaglercraft 1.9</span>
+        <button type="button" id="mc-reload" title="Reload">↻</button>
+        <button type="button" id="mc-fs" title="Fullscreen">⛶</button>
+      </div>
+      <iframe class="mc-frame" id="mc-frame" src="${MC_URL}" allow="fullscreen; gamepad; autoplay; pointer-lock" allowfullscreen></iframe>
+    </div>`;
+  var frame = root.querySelector("#mc-frame");
+  root.querySelector("#mc-reload").onclick = function () {
+    frame.src = MC_URL + (MC_URL.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
+  };
+  root.querySelector("#mc-fs").onclick = function () {
+    var el = root.querySelector(".mc-app");
+    if (!document.fullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen || function () {}).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
+    }
+  };
+  // pause OS music while playing
+  try {
+    var bg = document.getElementById("bg-music");
+    if (bg) bg.pause();
+  } catch (e) {}
+}
 
 function renderClockApp(root) {
   root.innerHTML = `<div class="clock-app">
@@ -3681,22 +3957,55 @@ function renderTaskMgr(root) {
     lockBtn.parentElement && lockBtn.parentElement.appendChild(rs);
   }
 
-  // Click sound optional on buttons
-  var clickAudio = null;
-  try {
-    // tiny silent-ish beep via oscillator on demand
-  } catch (e) {}
-  document.addEventListener("click", function (e) {
-    if (!e.target.closest("button")) return;
+  // Soft UI click (filtered noise blip — not a harsh beep)
+  function mountClickSound() {
     try {
       var ctx = window.__mountAudioCtx || (window.__mountAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
-      var o = ctx.createOscillator();
+      if (ctx.state === "suspended") ctx.resume();
+      var t0 = ctx.currentTime;
+      // short noise burst
+      var n = 2 * ctx.sampleRate | 0;
+      var buf = ctx.createBuffer(1, Math.max(1, n * 0.03 | 0), ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.2);
+      }
+      var src = ctx.createBufferSource();
+      src.buffer = buf;
+      var bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 1800;
+      bp.Q.value = 0.9;
       var g = ctx.createGain();
-      o.frequency.value = 880;
-      g.gain.value = 0.02;
-      o.connect(g); g.connect(ctx.destination);
-      o.start(); o.stop(ctx.currentTime + 0.03);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.11, t0 + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.045);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(ctx.destination);
+      src.start(t0);
+      src.stop(t0 + 0.05);
+      // soft high tick on top
+      var o = ctx.createOscillator();
+      var g2 = ctx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(2400, t0);
+      o.frequency.exponentialRampToValueAtTime(900, t0 + 0.04);
+      g2.gain.setValueAtTime(0.0001, t0);
+      g2.gain.exponentialRampToValueAtTime(0.035, t0 + 0.003);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.04);
+      o.connect(g2);
+      g2.connect(ctx.destination);
+      o.start(t0);
+      o.stop(t0 + 0.045);
     } catch (err) {}
+  }
+  document.addEventListener("pointerdown", function (e) {
+    if (!e.isPrimary) return;
+    if (!e.target.closest("button, .desk-icon, .tb, .tb-tray, .tb-bell, .start-app, .wbtn, .game-tile")) return;
+    // skip if reduced motion / user muted via volume 0 optional
+    if (document.body.classList.contains("reduced-motion")) return;
+    mountClickSound();
   }, true);
 
   // Games: sort / shuffle toolbar if library exists later via mutation — skip

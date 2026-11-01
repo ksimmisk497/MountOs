@@ -1,0 +1,24 @@
+{
+  "roles": [
+    {
+      "id": "mount_lqn2ugd6h7ph",
+      "tag": "Owner",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "example_admin_id",
+      "tag": "Admin",
+      "color": "#ef4444"
+    },
+    {
+      "id": "example_mod_id",
+      "tag": "Moderator",
+      "color": "#3b82f6"
+    },
+    {
+      "id": "example_beta_id",
+      "tag": "Beta Tester",
+      "color": "#a855f7"
+    }
+  ]
+}
