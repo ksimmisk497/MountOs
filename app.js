@@ -2857,8 +2857,9 @@ try { ensureProxySW(); } catch (e) {}
 
 
 
+
 function renderMountChat(root) {
-  var myId = (typeof getMountId === "function" ? getMountId() : (typeof ensureMountId === "function" ? ensureMountId() : ("mount_" + Math.random().toString(36).slice(2, 10))));
+  var myId = (typeof getMountId === "function" ? getMountId() : ("mount_" + Math.random().toString(36).slice(2, 10)));
   function currentName() {
     try {
       var u = currentUser();
@@ -2875,6 +2876,7 @@ function renderMountChat(root) {
   var seen = {};
   var client = null;
   var connected = false;
+  var historyAsked = false;
 
   root.innerHTML =
     '<div class="im-chat">' +
@@ -2894,10 +2896,18 @@ function renderMountChat(root) {
   var inputEl = root.querySelector("#im-input");
 
   function loadLocal() {
-    try { return JSON.parse(localStorage.getItem(MSG_KEY) || "[]"); } catch (e) { return []; }
+    try {
+      var list = JSON.parse(localStorage.getItem(MSG_KEY) || "[]");
+      if (!Array.isArray(list)) return [];
+      return list.filter(function (m) { return m && m.text; });
+    } catch (e) { return []; }
   }
   function saveLocal(list) {
-    try { localStorage.setItem(MSG_KEY, JSON.stringify(list.slice(-300))); } catch (e) {}
+    try {
+      list = list.slice().sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      // keep more history
+      localStorage.setItem(MSG_KEY, JSON.stringify(list.slice(-500)));
+    } catch (e) {}
   }
   function tagFor(id) {
     var r = rolesMap[id];
@@ -2905,12 +2915,19 @@ function renderMountChat(root) {
     return { tag: r.tag || "Member", color: r.color || "#60cdff" };
   }
   function msgKey(m) {
-    return String(m.ts) + "|" + String(m.id) + "|" + String(m.text);
+    return String(m.ts) + "|" + String(m.id) + "|" + String(m.text || "").slice(0, 80);
   }
 
   function renderAll() {
     var msgs = loadLocal().slice().sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
     logEl.innerHTML = "";
+    if (!msgs.length) {
+      var empty = document.createElement("div");
+      empty.className = "im-day";
+      empty.textContent = "No messages yet — say hi";
+      logEl.appendChild(empty);
+      return;
+    }
     var lastDay = "";
     msgs.forEach(function (m) {
       var day = "";
@@ -2943,6 +2960,19 @@ function renderMountChat(root) {
           meta.appendChild(badge);
         }
         row.appendChild(meta);
+      } else {
+        var meta2 = document.createElement("div");
+        meta2.className = "im-meta";
+        meta2.style.justifyContent = "flex-end";
+        var tg2 = tagFor(m.id);
+        if (tg2) {
+          var badge2 = document.createElement("span");
+          badge2.className = "chat-tag";
+          badge2.style.background = tg2.color;
+          badge2.textContent = tg2.tag;
+          meta2.appendChild(badge2);
+        }
+        row.appendChild(meta2);
       }
       var bubble = document.createElement("div");
       bubble.className = "im-bubble";
@@ -2959,9 +2989,9 @@ function renderMountChat(root) {
     logEl.scrollTop = logEl.scrollHeight;
   }
 
-  function ingest(m, fromNet) {
+  function ingest(m) {
     if (!m || !m.text) return;
-    m.ts = m.ts || Date.now();
+    m.ts = Number(m.ts) || Date.now();
     m.id = m.id || "unknown";
     m.name = m.name || "User";
     var k = msgKey(m);
@@ -2969,7 +2999,7 @@ function renderMountChat(root) {
     seen[k] = 1;
     var list = loadLocal();
     if (!list.some(function (x) { return msgKey(x) === k; })) {
-      list.push(m);
+      list.push({ id: m.id, name: m.name, text: String(m.text).slice(0, 500), ts: m.ts });
       saveLocal(list);
     }
     renderAll();
@@ -2980,26 +3010,68 @@ function renderMountChat(root) {
     statusEl.className = "im-top-status" + (ok ? " on" : "");
   }
 
-  function publish(m) {
-    var payload = JSON.stringify(m);
-    // local echo first
-    ingest(m, false);
-    // MQTT
+  function recentForShare() {
+    return loadLocal().slice(-80).map(function (m) {
+      return { id: m.id, name: m.name, text: m.text, ts: m.ts };
+    });
+  }
+
+  function publishChat(m) {
+    ingest(m);
+    var payload = JSON.stringify({ type: "chat", msg: m });
     if (client && connected) {
       try { client.publish(ROOM, payload, { qos: 0, retain: false }); } catch (e) {}
     }
-    // same-browser tabs
     try {
       if (!window.__mountChatBC) window.__mountChatBC = new BroadcastChannel("mount_chat_v2");
       window.__mountChatBC.postMessage({ type: "chat", msg: m });
     } catch (e) {}
   }
 
-  // BroadcastChannel peers
+  function publishHistoryRes() {
+    if (!client || !connected) return;
+    var payload = JSON.stringify({ type: "history_res", msgs: recentForShare(), from: myId });
+    try { client.publish(ROOM, payload, { qos: 0 }); } catch (e) {}
+  }
+
+  function requestHistory() {
+    if (!client || !connected || historyAsked) return;
+    historyAsked = true;
+    var payload = JSON.stringify({ type: "history_req", from: myId, ts: Date.now() });
+    try { client.publish(ROOM, payload, { qos: 0 }); } catch (e) {}
+    // also ask local tabs
+    try {
+      if (!window.__mountChatBC) window.__mountChatBC = new BroadcastChannel("mount_chat_v2");
+      window.__mountChatBC.postMessage({ type: "history_req", from: myId });
+    } catch (e) {}
+  }
+
+  function handlePacket(data) {
+    if (!data || typeof data !== "object") return;
+    if (data.type === "chat" && data.msg) {
+      ingest(data.msg);
+    } else if (data.type === "history_req") {
+      // share what we have (don't echo our own req endlessly)
+      if (data.from && data.from !== myId) {
+        publishHistoryRes();
+        try {
+          if (window.__mountChatBC) {
+            window.__mountChatBC.postMessage({ type: "history_res", msgs: recentForShare(), from: myId });
+          }
+        } catch (e) {}
+      }
+    } else if (data.type === "history_res" && Array.isArray(data.msgs)) {
+      data.msgs.forEach(function (m) { ingest(m); });
+    } else if (data.text && data.id) {
+      // plain message shape
+      ingest(data);
+    }
+  }
+
   try {
     if (!window.__mountChatBC) window.__mountChatBC = new BroadcastChannel("mount_chat_v2");
     window.__mountChatBC.onmessage = function (ev) {
-      if (ev.data && ev.data.type === "chat" && ev.data.msg) ingest(ev.data.msg, true);
+      handlePacket(ev.data);
     };
   } catch (e) {}
 
@@ -3021,40 +3093,43 @@ function renderMountChat(root) {
     function start(mqttLib) {
       try {
         client = mqttLib.connect("wss://broker.hivemq.com:8884/mqtt", {
-          clientId: "mount_" + myId + "_" + Math.random().toString(16).slice(2, 8),
+          clientId: "mount_" + String(myId).replace(/[^a-z0-9]/gi, "").slice(0, 12) + "_" + Math.random().toString(16).slice(2, 8),
           clean: true,
-          reconnectPeriod: 3000,
-          connectTimeout: 8000
+          reconnectPeriod: 4000,
+          connectTimeout: 10000
         });
         client.on("connect", function () {
           connected = true;
-          setStatus("Connected", true);
+          setStatus("Online · global room", true);
           try { client.subscribe(ROOM, { qos: 0 }); } catch (e) {}
+          // ask others for history after a short delay
+          setTimeout(requestHistory, 600);
+          setTimeout(requestHistory, 2500);
         });
         client.on("reconnect", function () {
           connected = false;
+          historyAsked = false;
           setStatus("Reconnecting…", false);
         });
         client.on("close", function () {
           connected = false;
-          setStatus("Offline (Servers Broke)", false);
+          setStatus("Offline · showing saved history", false);
         });
         client.on("error", function () {
           connected = false;
-          setStatus("Offline · local only", false);
+          setStatus("Offline · showing saved history", false);
         });
         client.on("message", function (topic, payload) {
           try {
-            var m = JSON.parse(String(payload));
-            if (m && m.text) ingest(m, true);
+            var data = JSON.parse(String(payload));
+            handlePacket(data);
           } catch (e) {}
         });
       } catch (err) {
-        setStatus("Offline · local only", false);
+        setStatus("Offline · showing saved history", false);
       }
     }
 
-    // Load MQTT.js from CDN once
     if (window.mqtt) {
       start(window.mqtt);
       return;
@@ -3063,10 +3138,10 @@ function renderMountChat(root) {
     s.src = "https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js";
     s.onload = function () {
       if (window.mqtt) start(window.mqtt);
-      else setStatus("Offline · local only", false);
+      else setStatus("Offline · showing saved history", false);
     };
     s.onerror = function () {
-      setStatus("Offline · local only", false);
+      setStatus("Offline · showing saved history", false);
     };
     document.head.appendChild(s);
   }
@@ -3076,7 +3151,7 @@ function renderMountChat(root) {
     var text = (inputEl.value || "").trim();
     if (!text) return;
     inputEl.value = "";
-    publish({
+    publishChat({
       id: myId,
       name: currentName(),
       text: text,
@@ -3084,14 +3159,12 @@ function renderMountChat(root) {
     });
   };
 
-  // seed seen from local
+  // Load saved history immediately
   loadLocal().forEach(function (m) { seen[msgKey(m)] = 1; });
   loadRoles();
   renderAll();
   connectMqtt();
   inputEl.focus();
-
-  // cleanup when window closes is hard; leave client connected for session
 }
 
 function renderMinecraft(root) {
